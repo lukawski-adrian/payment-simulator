@@ -2,7 +2,7 @@ package pl.varlab.payment.account;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
-import pl.varlab.payment.PaymentRequest;
+import pl.varlab.payment.transaction.TransactionRequest;
 
 import java.math.BigDecimal;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,9 +22,9 @@ public class AccountService {
         throw new AccountNotFoundException(accountId);
     }
 
-    public void withdrawal(PaymentRequest paymentRequest) throws InsufficientFundsException, AccountNotFoundException {
-        var amount = paymentRequest.amount();
-        var senderId = paymentRequest.senderId();
+    public void withdrawal(TransactionRequest transactionRequest) throws InsufficientFundsException, AccountNotFoundException {
+        var amount = transactionRequest.amount();
+        var senderId = transactionRequest.senderId();
 
         var lock = getLockForKey(senderId);
         lock.lock();
@@ -35,9 +35,9 @@ public class AccountService {
         }
     }
 
-    public void deposit(PaymentRequest paymentRequest) throws AccountNotFoundException {
-        var amount = paymentRequest.amount();
-        var recipientId = paymentRequest.recipientId();
+    public void deposit(TransactionRequest transactionRequest) throws AccountNotFoundException {
+        var amount = transactionRequest.amount();
+        var recipientId = transactionRequest.recipientId();
 
         var lock = getLockForKey(recipientId);
         lock.lock();
