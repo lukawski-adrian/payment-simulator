@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import pl.varlab.payment.account.AccountNotFoundException;
 import pl.varlab.payment.account.AccountService;
 import pl.varlab.payment.account.InsufficientFundsException;
-import pl.varlab.payment.guards.ComplianceGuard;
-import pl.varlab.payment.guards.FraudDetectionException;
-import pl.varlab.payment.guards.FraudDetectionGuard;
+import pl.varlab.payment.guard.ComplianceGuard;
+import pl.varlab.payment.guard.FraudDetectionException;
+import pl.varlab.payment.guard.FraudDetectionGuard;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;

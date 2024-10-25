@@ -1,4 +1,4 @@
-package pl.varlab.payment.guards;
+package pl.varlab.payment.guard;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -9,13 +9,13 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-public class FraudDetectionGuard {
+public class ComplianceGuard {
 
     @Async
-    public CompletableFuture<Void> assertNotFraud(TransactionRequest transactionRequest) {
+    public CompletableFuture<Void> assertCompliant(TransactionRequest transactionRequest) {
         try {
-            log.info("Fraud detection verification: {}", transactionRequest);
-            // TODO: what in case of runtime exception?
+            // TODO: compliance blocked user case
+            log.info("Compliance verification: {}", transactionRequest);
             Thread.sleep(500);
             return CompletableFuture.completedFuture(null);
         } catch (InterruptedException e) {
