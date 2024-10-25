@@ -31,7 +31,7 @@ public class TransactionService {
     // TODO: tests for retryable
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000))
     public void processTransaction(TransactionRequest transactionRequest) {
-        log.info("Processing payment request: {}", transactionRequest);
+        log.info("Processing transaction request: {}", transactionRequest);
 
         try {
             accountService.withdrawal(transactionRequest);
@@ -61,53 +61,19 @@ public class TransactionService {
         var fraudDetectionResult = this.fraudDetectionGuard.assertNotFraud(transactionRequest);
         var complianceResult = this.complianceGuard.assertCompliant(transactionRequest);
 
-        waitForResults(fraudDetectionResult, complianceResult);
-
-        handleFraudDetectionResult(transactionRequest, fraudDetectionResult);
-        handleComplianceVerificationResult(transactionRequest, complianceResult);
-    }
-
-    private static void waitForResults(CompletableFuture<Void> fraudDetectionResult, CompletableFuture<Void> complianceResult) {
         try {
             // TODO: wrap and retry in case of exception, move to other queue after retry
             CompletableFuture.allOf(fraudDetectionResult, complianceResult).get(5, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (InterruptedException | TimeoutException e) {
+            // TODO: consider case when one of the guards throws exception then should all verifications should be retried?
             log.error("Error occurred while processing payment", e);
             throw new RuntimeException(e);
-        }
-    }
-
-    private static void handleFraudDetectionResult(TransactionRequest transactionRequest, CompletableFuture<Void> fraudDetectionResult) {
-        try {
-            fraudDetectionResult.get();
-        } catch (InterruptedException e) {
-            log.error("Fraud detection thread has been interrupted {}", transactionRequest);
-            throw new RuntimeException(e);
         } catch (ExecutionException e) {
-            if (e.getCause() instanceof FraudDetectionException) {
-                // TODO: handle fraud detection in special manner
-                log.error("Fraud has been detected! {}", transactionRequest);
-            } else {
-                log.error("Error occurred while processing fraud detection result", e);
-                throw new RuntimeException(e.getCause());
+            switch (e.getCause()) {
+                case FraudDetectionException fe -> log.info("Report fraud: {}", fe.getMessage());
+                default -> log.error("Unexpected execution error", e);
             }
         }
     }
 
-    private static void handleComplianceVerificationResult(TransactionRequest transactionRequest, CompletableFuture<Void> complianceVerficationResult) {
-        try {
-            complianceVerficationResult.get();
-        } catch (InterruptedException e) {
-            log.error("Compliance verification thread has been interrupted {}", transactionRequest);
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof FraudDetectionException) {
-                // TODO: handle fraud detection in special manner
-                log.error("Compliance verification failed! {}", transactionRequest);
-            } else {
-                log.error("Error occurred while processing compliance verification result", e);
-                throw new RuntimeException(e.getCause());
-            }
-        }
-    }
 }
