@@ -10,8 +10,8 @@ import pl.varlab.payment.account.AccountNotFoundException;
 import pl.varlab.payment.account.AccountService;
 import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.guard.ComplianceGuard;
-import pl.varlab.payment.guard.FraudDetectionException;
 import pl.varlab.payment.guard.FraudDetectionGuard;
+import pl.varlab.payment.guard.TransactionException;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -26,53 +26,61 @@ public class TransactionService {
     private final FraudDetectionGuard fraudDetectionGuard;
     private final ComplianceGuard complianceGuard;
     private final AccountService accountService;
+    private final TransactionBlocker transactionBlocker;
 
     @Async
     // TODO: tests for retryable
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000))
     public void processTransaction(TransactionRequest transactionRequest) {
+        // TODO: validate input request
         log.info("Processing transaction request: {}", transactionRequest);
 
         try {
             accountService.withdraw(transactionRequest);
         } catch (InsufficientFundsException e) {
-            // TODO: consider more sophisticated error handling
-            log.info("Insufficient funds on sender account for payment request: {}", transactionRequest);
+            log.warn("Insufficient funds on sender account for payment request: {}", transactionRequest);
             return;
         } catch (AccountNotFoundException e) {
-            log.info("Sender accountId not found: {}", transactionRequest);
+            log.warn("Sender accountId not found: {}", transactionRequest);
             return;
         }
 
-        verificationChecks(transactionRequest);
+        try {
+            verifyTransaction(transactionRequest);
+        } catch (ExecutionException e) {
+            var cause = e.getCause();
+
+            if (cause instanceof TransactionException) {
+                transactionBlocker.blockTransaction((TransactionException) cause);
+                return;
+            }
+
+            throw new RuntimeException("Unexpected execution error during transaction verification", cause);
+        }
 
         try {
             accountService.deposit(transactionRequest);
         } catch (AccountNotFoundException e) {
             // TODO: consider more sophisticated error handling, verify sender and recipient ids at the beginning?
-            log.info("Recipient accountId not found: {}", transactionRequest);
+            // TODO: or recover? refund?
+            log.warn("Recipient accountId not found: {}", transactionRequest);
         }
     }
 
-    private void verificationChecks(TransactionRequest transactionRequest) {
+    private void verifyTransaction(TransactionRequest transactionRequest) throws ExecutionException {
         // TODO: consider multiple concurrent transactions
         // TODO: enable virtual threads
         // TODO: fees
+        // TODO: consider common transaction guard interface
         var fraudDetectionResult = this.fraudDetectionGuard.assertNotFraud(transactionRequest);
         var complianceResult = this.complianceGuard.assertCompliant(transactionRequest);
 
         try {
-            // TODO: wrap and retry in case of exception, move to other queue after retry
+            // TODO: wrap and retry in case of exception, move to other queue after retry (specific exception type?)
             CompletableFuture.allOf(fraudDetectionResult, complianceResult).get(5, TimeUnit.SECONDS);
         } catch (InterruptedException | TimeoutException e) {
-            // TODO: consider case when one of the guards throws exception then should all verifications should be retried?
-            log.error("Error occurred while processing payment", e);
+            log.error("Transaction guard interrupted or timeout exceeded", e);
             throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            switch (e.getCause()) {
-                case FraudDetectionException fe -> log.info("Report fraud: {}", fe.getMessage());
-                default -> log.error("Unexpected execution error", e);
-            }
         }
     }
 
