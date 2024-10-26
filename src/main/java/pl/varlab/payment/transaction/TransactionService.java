@@ -34,7 +34,7 @@ public class TransactionService {
         log.info("Processing transaction request: {}", transactionRequest);
 
         try {
-            accountService.withdrawal(transactionRequest);
+            accountService.withdraw(transactionRequest);
         } catch (InsufficientFundsException e) {
             // TODO: consider more sophisticated error handling
             log.info("Insufficient funds on sender account for payment request: {}", transactionRequest);

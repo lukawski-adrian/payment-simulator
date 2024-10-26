@@ -1,8 +1,12 @@
 package pl.varlab.payment.account;
 
 import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import pl.varlab.payment.audit.AuditService;
 import pl.varlab.payment.transaction.TransactionRequest;
+import pl.varlab.payment.transaction.TransactionType;
 
 import java.math.BigDecimal;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,10 +14,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 // TODO: consider Outbox pattern
 @Service
+@AllArgsConstructor
 public class AccountService {
 
     private final ConcurrentHashMap<String, BigDecimal> accounts = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
+    private final AuditService auditService;
 
     private ReentrantLock getLockForKey(String accountId) throws AccountNotFoundException {
         if (locks.containsKey(accountId))
@@ -22,14 +28,15 @@ public class AccountService {
         throw new AccountNotFoundException(accountId);
     }
 
-    public void withdrawal(TransactionRequest transactionRequest) throws InsufficientFundsException, AccountNotFoundException {
+    public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, AccountNotFoundException {
         var amount = transactionRequest.amount();
         var senderId = transactionRequest.senderId();
 
         var lock = getLockForKey(senderId);
         lock.lock();
         try {
-            internalWithdrawal(senderId, amount);
+            internalWithdraw(senderId, amount);
+            auditService.logWithdraw(transactionRequest);
         } finally {
             lock.unlock();
         }
@@ -43,12 +50,13 @@ public class AccountService {
         lock.lock();
         try {
             internalDeposit(recipientId, amount);
+            auditService.logDeposit(transactionRequest);
         } finally {
             lock.unlock();
         }
     }
 
-    private void internalWithdrawal(String senderId, BigDecimal amount) throws InsufficientFundsException {
+    private void internalWithdraw(String senderId, BigDecimal amount) throws InsufficientFundsException {
         var accountBalance = accounts.get(senderId);
         // TODO: verify second math context function
         var updateAccountBalance = accountBalance.subtract(amount);

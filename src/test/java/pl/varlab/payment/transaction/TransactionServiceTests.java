@@ -32,13 +32,13 @@ public class TransactionServiceTests {
     public void shouldNotProcessTransaction_whenInsufficientFunds() throws InsufficientFundsException, AccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
-        doThrow(InsufficientFundsException.class).when(accountService).withdrawal(transactionRequest);
+        doThrow(InsufficientFundsException.class).when(accountService).withdraw(transactionRequest);
 
         var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService);
 
         transactionService.processTransaction(transactionRequest);
 
-        verify(accountService).withdrawal(transactionRequest);
+        verify(accountService).withdraw(transactionRequest);
         verifyNoMoreInteractions(accountService);
         verifyNoInteractions(complianceGuard, fraudDetectionGuard);
     }
@@ -47,13 +47,13 @@ public class TransactionServiceTests {
     public void shouldNotProcessTransaction_whenSenderAccountNotFound() throws InsufficientFundsException, AccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
-        doThrow(AccountNotFoundException.class).when(accountService).withdrawal(transactionRequest);
+        doThrow(AccountNotFoundException.class).when(accountService).withdraw(transactionRequest);
 
         var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService);
 
         transactionService.processTransaction(transactionRequest);
 
-        verify(accountService).withdrawal(transactionRequest);
+        verify(accountService).withdraw(transactionRequest);
         verifyNoMoreInteractions(accountService);
         verifyNoInteractions(complianceGuard, fraudDetectionGuard);
     }
@@ -71,7 +71,7 @@ public class TransactionServiceTests {
 
         transactionService.processTransaction(transactionRequest);
 
-        verify(accountService).withdrawal(transactionRequest);
+        verify(accountService).withdraw(transactionRequest);
         verify(accountService).deposit(transactionRequest);
 
         verify(complianceGuard).assertCompliant(transactionRequest);
@@ -91,7 +91,7 @@ public class TransactionServiceTests {
 
         transactionService.processTransaction(transactionRequest);
 
-        verify(accountService).withdrawal(transactionRequest);
+        verify(accountService).withdraw(transactionRequest);
         verify(fraudDetectionGuard).assertNotFraud(transactionRequest);
         verify(complianceGuard).assertCompliant(transactionRequest);
 
