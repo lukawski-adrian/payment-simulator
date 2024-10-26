@@ -6,6 +6,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import pl.varlab.payment.AsyncConfig;
 import pl.varlab.payment.account.AccountNotFoundException;
 import pl.varlab.payment.account.AccountService;
 import pl.varlab.payment.account.InsufficientFundsException;
@@ -28,7 +29,7 @@ public class TransactionService {
     private final AccountService accountService;
     private final TransactionBlocker transactionBlocker;
 
-    @Async
+    @Async(AsyncConfig.TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR)
     // TODO: tests for retryable
     @Retryable(retryFor = RuntimeException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000))
     public void processTransaction(TransactionRequest transactionRequest) {
