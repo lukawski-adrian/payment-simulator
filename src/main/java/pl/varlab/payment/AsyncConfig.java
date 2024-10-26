@@ -3,6 +3,7 @@ package pl.varlab.payment;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -13,6 +14,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
+@Profile("!non-async")
 public class AsyncConfig implements AsyncConfigurer {
 
     public static final String TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR = "transactionProcessorsThreadPoolTaskExecutor";

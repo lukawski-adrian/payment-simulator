@@ -5,7 +5,7 @@ spring:
 server.servlet.contextPath: /api
 
 # TODO: enable actuator
-retry:
+resilience4j.retry:
   instances:
     transaction-service:
       # Maximum number of attempts (including the initial call as the first attempt)

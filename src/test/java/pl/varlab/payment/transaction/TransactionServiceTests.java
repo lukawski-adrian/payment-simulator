@@ -10,19 +10,20 @@ import pl.varlab.payment.guard.FraudDetectedException;
 import pl.varlab.payment.guard.FraudDetectionGuard;
 import pl.varlab.payment.guard.NonCompliantTransactionException;
 
-import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
+import static pl.varlab.payment.transaction.TransactionTestCommons.TRANSACTION_ID;
+import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
 // TODO: distinguish between unit and integration tests
 public class TransactionServiceTests {
 
-    private static final String TRANSACTION_ID = "tx1";
     private final ComplianceGuard complianceGuard = mock(ComplianceGuard.class);
     private final FraudDetectionGuard fraudDetectionGuard = mock(FraudDetectionGuard.class);
     private final AccountService accountService = mock(AccountService.class);
     private final TransactionBlocker transactionBlocker = mock(TransactionBlocker.class);
+    private final TransactionFallbackService fallbackService = mock(TransactionFallbackService.class);
 
     @BeforeEach
     void setUp() {
@@ -30,6 +31,7 @@ public class TransactionServiceTests {
         reset(fraudDetectionGuard);
         reset(accountService);
         reset(transactionBlocker);
+        reset(fallbackService);
     }
 
     @Test
@@ -38,13 +40,13 @@ public class TransactionServiceTests {
 
         doThrow(InsufficientFundsException.class).when(accountService).withdraw(transactionRequest);
 
-        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker);
+        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker, fallbackService);
 
         transactionService.processTransaction(transactionRequest);
 
         verify(accountService).withdraw(transactionRequest);
         verifyNoMoreInteractions(accountService);
-        verifyNoInteractions(complianceGuard, fraudDetectionGuard, transactionBlocker);
+        verifyNoInteractions(complianceGuard, fraudDetectionGuard, transactionBlocker, fallbackService);
     }
 
     @Test
@@ -53,13 +55,13 @@ public class TransactionServiceTests {
 
         doThrow(AccountNotFoundException.class).when(accountService).withdraw(transactionRequest);
 
-        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker);
+        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker, fallbackService);
 
         transactionService.processTransaction(transactionRequest);
 
         verify(accountService).withdraw(transactionRequest);
         verifyNoMoreInteractions(accountService);
-        verifyNoInteractions(complianceGuard, fraudDetectionGuard, transactionBlocker);
+        verifyNoInteractions(complianceGuard, fraudDetectionGuard, transactionBlocker, fallbackService);
     }
 
     @Test
@@ -71,7 +73,7 @@ public class TransactionServiceTests {
         when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
         when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
 
-        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker);
+        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker, fallbackService);
 
         transactionService.processTransaction(transactionRequest);
 
@@ -82,6 +84,7 @@ public class TransactionServiceTests {
         verify(fraudDetectionGuard).assertNotFraud(transactionRequest);
 
         verifyNoMoreInteractions(accountService, complianceGuard, fraudDetectionGuard, transactionBlocker);
+        verifyNoInteractions(fallbackService);
     }
 
     @Test
@@ -92,7 +95,7 @@ public class TransactionServiceTests {
         when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.failedFuture(fraudException));
         when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
 
-        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker);
+        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker, fallbackService);
 
         transactionService.processTransaction(transactionRequest);
 
@@ -102,6 +105,7 @@ public class TransactionServiceTests {
         verify(complianceGuard).assertCompliant(transactionRequest);
 
         verifyNoMoreInteractions(accountService, complianceGuard, fraudDetectionGuard, transactionBlocker);
+        verifyNoInteractions(fallbackService);
     }
 
     @Test
@@ -112,7 +116,7 @@ public class TransactionServiceTests {
         when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
         when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.failedFuture(nonCompliantException));
 
-        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker);
+        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker, fallbackService);
 
         transactionService.processTransaction(transactionRequest);
 
@@ -122,9 +126,8 @@ public class TransactionServiceTests {
         verify(complianceGuard).assertCompliant(transactionRequest);
 
         verifyNoMoreInteractions(accountService, complianceGuard, fraudDetectionGuard, transactionBlocker);
+        verifyNoInteractions(fallbackService);
     }
 
-    private static TransactionRequest getTransactionRequest() {
-        return new TransactionRequest(TRANSACTION_ID, "acc1", "acc2", BigDecimal.valueOf(10.33d));
-    }
+
 }

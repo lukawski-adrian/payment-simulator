@@ -27,9 +27,10 @@ public class TransactionService {
     private final ComplianceGuard complianceGuard;
     private final AccountService accountService;
     private final TransactionBlocker transactionBlocker;
+    private final TransactionFallbackService fallbackService;
 
+    // TODO: tests for @Retry, @Async
     @Async(AsyncConfig.TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR)
-    // TODO: tests for retryable
     @Retry(name = "transaction-service", fallbackMethod = "fallback")
     public void processTransaction(TransactionRequest transactionRequest) {
         // TODO: validate input request
@@ -85,7 +86,11 @@ public class TransactionService {
     }
 
     private void fallback(TransactionRequest transactionRequest, Exception exception) {
-        log.warn("Fallback transaction request: {}", transactionRequest, exception);
+        log.error("Unexpected error when try to process transaction {}", transactionRequest);
+        log.error("Error:", exception);
+
+        log.info("Redirecting to fallback service {}", transactionRequest);
+        fallbackService.reportTransactionProcessFailure(transactionRequest);
     }
 
 }
