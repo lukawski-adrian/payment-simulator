@@ -2,11 +2,9 @@ package pl.varlab.payment.account;
 
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.varlab.payment.audit.AuditService;
 import pl.varlab.payment.transaction.TransactionRequest;
-import pl.varlab.payment.transaction.TransactionType;
 
 import java.math.BigDecimal;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 // TODO: consider Outbox pattern
 @Service
 @AllArgsConstructor
+// TODO: tests
 public class AccountService {
 
     private final ConcurrentHashMap<String, BigDecimal> accounts = new ConcurrentHashMap<>();

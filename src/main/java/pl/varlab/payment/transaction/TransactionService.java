@@ -1,5 +1,6 @@
 package pl.varlab.payment.transaction;
 
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -29,6 +30,7 @@ public class TransactionService {
 
     @Async(AsyncConfig.TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR)
     // TODO: tests for retryable
+    @Retry(name = "transaction-service", fallbackMethod = "fallback")
     public void processTransaction(TransactionRequest transactionRequest) {
         // TODO: validate input request
         log.info("Processing transaction request: {}", transactionRequest);
@@ -80,6 +82,10 @@ public class TransactionService {
             log.error("Transaction guard interrupted or timeout exceeded", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private void fallback(TransactionRequest transactionRequest, Exception exception) {
+        log.warn("Fallback transaction request: {}", transactionRequest, exception);
     }
 
 }
