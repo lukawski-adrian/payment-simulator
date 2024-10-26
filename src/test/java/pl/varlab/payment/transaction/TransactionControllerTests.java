@@ -30,7 +30,7 @@ public class TransactionControllerTests {
     private static final String EMPTY = "";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private static final URI TRANSACTIONS_ENDPOINT = URI.create("/transactions");
+    private static final URI TRANSACTIONS_ENDPOINT = URI.create("/v1/transactions");
 
     @Autowired
     private MockMvc mockMvc;

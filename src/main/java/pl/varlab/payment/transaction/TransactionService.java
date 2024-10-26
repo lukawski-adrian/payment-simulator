@@ -2,8 +2,6 @@ package pl.varlab.payment.transaction;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import pl.varlab.payment.AsyncConfig;
@@ -31,7 +29,6 @@ public class TransactionService {
 
     @Async(AsyncConfig.TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR)
     // TODO: tests for retryable
-    @Retryable(retryFor = RuntimeException.class, maxAttempts = 4, backoff = @Backoff(delay = 1000))
     public void processTransaction(TransactionRequest transactionRequest) {
         // TODO: validate input request
         log.info("Processing transaction request: {}", transactionRequest);
