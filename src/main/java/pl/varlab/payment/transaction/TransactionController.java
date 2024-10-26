@@ -7,7 +7,7 @@ import pl.varlab.payment.common.BaseController;
 
 
 @RestController
-@RequestMapping("/transactions")
+@RequestMapping("/v1/transactions")
 @AllArgsConstructor
 public class TransactionController extends BaseController {
 
