@@ -27,12 +27,29 @@ public class TransactionServiceTests {
 
     @BeforeEach
     void setUp() {
-        reset(complianceGuard);
-        reset(fraudDetectionGuard);
-        reset(accountService);
-        reset(transactionBlocker);
-        reset(fallbackService);
+        reset(complianceGuard, fraudDetectionGuard, accountService, transactionBlocker, fallbackService);
     }
+
+    @Test
+    public void shouldProcessTransaction_thenTransferMoney() throws InsufficientFundsException, AccountNotFoundException {
+        var transactionRequest = getTransactionRequest();
+
+        when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
+        when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
+
+        var transactionService = new TransactionService(fraudDetectionGuard, complianceGuard, accountService, transactionBlocker, fallbackService);
+
+        transactionService.processTransaction(transactionRequest);
+
+        verify(accountService).withdraw(transactionRequest);
+        verify(accountService).deposit(transactionRequest);
+        verify(complianceGuard).assertCompliant(transactionRequest);
+        verify(fraudDetectionGuard).assertNotFraud(transactionRequest);
+
+        verifyNoMoreInteractions(accountService, complianceGuard, fraudDetectionGuard);
+        verifyNoInteractions(fallbackService, transactionBlocker);
+    }
+
 
     @Test
     public void shouldNotProcessTransaction_whenInsufficientFunds() throws InsufficientFundsException, AccountNotFoundException {
