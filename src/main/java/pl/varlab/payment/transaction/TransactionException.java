@@ -2,7 +2,8 @@ package pl.varlab.payment.transaction;
 
 import lombok.Getter;
 
-import static lombok.Lombok.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 
 @Getter
 public class TransactionException extends Exception {
