@@ -1,9 +1,6 @@
 package pl.varlab.payment.account;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,8 +10,9 @@ import lombok.experimental.Accessors;
 @Setter
 @Getter
 @Accessors(chain = true)
-@Entity(name = "payment_accounts")
-public class PaymentAccountEntity {
+@Table(name = "payment_accounts")
+@Entity
+public class PaymentAccount {
 
     @Id
     @GeneratedValue

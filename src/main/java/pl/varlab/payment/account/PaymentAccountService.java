@@ -1,99 +1,59 @@
 package pl.varlab.payment.account;
 
-import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import pl.varlab.payment.audit.AuditService;
+import pl.varlab.payment.transaction.PaymentTransactionEvent;
+import pl.varlab.payment.transaction.PaymentTransactionEventRepository;
 import pl.varlab.payment.transaction.TransactionRequest;
 
-import java.math.BigDecimal;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import static pl.varlab.payment.transaction.TransactionType.DEPOSIT;
+import static pl.varlab.payment.transaction.TransactionType.WITHDRAW;
 
-// TODO: consider Outbox pattern
+// TODO: tests
 @Service
 @AllArgsConstructor
-// TODO: tests
+@Transactional
 public class PaymentAccountService {
 
-    private final ConcurrentHashMap<String, BigDecimal> accounts = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
-    private final AuditService auditService;
-    private final PaymentAccountRepository accountRepository;
-
-    private ReentrantLock getLockForKey(String accountId) throws PaymentAccountNotFoundException {
-        if (locks.containsKey(accountId))
-            return locks.get(accountId);
-
-        throw new PaymentAccountNotFoundException(accountId);
-    }
+    private final PaymentAccountGuard paymentAccountGuard;
+    private final PaymentAccountRepository paymentAccountRepository;
+    private final PaymentTransactionEventRepository paymentTransactionEventRepository;
 
     public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, PaymentAccountNotFoundException {
-         /*
-         *  In transaction
-         *  account found
-         *  Insufficient funds SELECT account_id, SUM(amount) FROM transaction_events WHERE account_id = 'acc1' GROUP BY account_id > amount
-         *  INSERT WITHDRAW
-         */
-        var amount = transactionRequest.amount();
-        var senderId = transactionRequest.senderId();
-
-        var lock = getLockForKey(senderId);
-        lock.lock();
-        try {
-            internalWithdraw(senderId, amount);
-            auditService.logWithdraw(transactionRequest);
-        } finally {
-            lock.unlock();
-        }
+        // TODO: idempotence
+        paymentAccountGuard.assertAvailableFunds(transactionRequest);
+        var newTransactionEvent = getWithdrawTransactionEvent(transactionRequest);
+        paymentTransactionEventRepository.save(newTransactionEvent);
     }
 
     public void deposit(TransactionRequest transactionRequest) throws PaymentAccountNotFoundException {
-        var amount = transactionRequest.amount();
-        var recipientId = transactionRequest.recipientId();
-
-        var lock = getLockForKey(recipientId);
-        lock.lock();
-        try {
-            internalDeposit(recipientId, amount);
-            auditService.logDeposit(transactionRequest);
-        } finally {
-            lock.unlock();
-        }
+        // TODO: idempotence
+        var newTransactionEvent = getDepositTransactionEvent(transactionRequest);
+        paymentTransactionEventRepository.save(newTransactionEvent);
     }
 
-    private void internalWithdraw(String senderId, BigDecimal amount) throws InsufficientFundsException {
-        var accountBalance = accounts.get(senderId);
-        // TODO: verify second math context function
-        var updateAccountBalance = accountBalance.subtract(amount);
-        if (BigDecimal.ZERO.compareTo(updateAccountBalance) > 0)
-            throw new InsufficientFundsException();
+    private PaymentTransactionEvent getWithdrawTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
+        var sender = paymentAccountRepository.findByName(tr.senderId())
+                .orElseThrow(() -> new PaymentAccountNotFoundException(tr.senderId()));
 
-        accounts.put(senderId, updateAccountBalance);
+        return new PaymentTransactionEvent()
+                .setTransactionType(WITHDRAW)
+                .setTransactionId(tr.transactionId())
+                .setAmount(tr.amount().negate())
+                .setAccount(sender);
     }
 
-    private void internalDeposit(String recipientId, BigDecimal amount) {
-        /*
-         *  In transaction
-         *  account found
-         *  Insufficient funds SELECT account_id, SUM(amount) FROM transaction_events WHERE account_id = 'acc1' GROUP BY account_id > amount
-         *  if is WITHDRAW for transaction?
-         *  INSERT DEPOSIT
-         */
-        var accountBalance = accounts.get(recipientId);
-        // TODO: verify second math context function
-        var updateAccountBalance = accountBalance.add(amount);
-        accounts.put(recipientId, updateAccountBalance);
+    private PaymentTransactionEvent getDepositTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
+        var recipient = paymentAccountRepository.findByName(tr.recipientId())
+                .orElseThrow(() -> new PaymentAccountNotFoundException(tr.recipientId()));
+
+        return new PaymentTransactionEvent()
+                .setTransactionType(DEPOSIT)
+                .setTransactionId(tr.transactionId())
+                .setAccount(recipient)
+                .setAmount(tr.amount());
     }
 
-    private void createAccount(String accountId) {
-        locks.put(accountId, new ReentrantLock());
-        accounts.put(accountId, BigDecimal.valueOf(100));
-    }
 
-    @PostConstruct
-    public void init() {
-        createAccount("acc1");
-        createAccount("acc2");
-    }
 }
