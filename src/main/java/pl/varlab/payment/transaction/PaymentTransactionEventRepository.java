@@ -12,7 +12,8 @@ public interface PaymentTransactionEventRepository extends JpaRepository<Payment
     @Query("""
                 SELECT SUM(t.amount) FROM PaymentTransactionEvent t
                     JOIN t.account a
-                GROUP BY a.id HAVING a.name = :accountName
+                    WHERE a.name = :accountName
+                    GROUP BY a.id
             """)
     Optional<BigDecimal> getAvailableFunds(@Param("accountName") String accountName);
 
