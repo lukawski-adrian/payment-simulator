@@ -9,6 +9,7 @@ spring:
   jpa:
     open-in-view: false
   mvc.servlet.path: /api
+  threads.virtual.enabled: true
 
 # TODO: enable actuator
 resilience4j.retry:
