@@ -14,9 +14,9 @@ import pl.varlab.payment.common.ErrorResponse;
 
 import java.net.URI;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.platform.commons.util.CollectionUtils.getOnlyElement;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -88,6 +88,7 @@ public class TransactionControllerTests extends BaseSpringContextTest {
 
     private static void assertEqualsRequests(ArgumentCaptor<TransactionRequest> transactionRequestCaptor, TransactionRequest transactionRequest) {
         var capturedRequest = getOnlyElement(transactionRequestCaptor.getAllValues());
+
         assertNotEquals(transactionRequest.transactionId(), capturedRequest.transactionId());
         assertEquals(transactionRequest.amount(), capturedRequest.amount());
         assertEquals(transactionRequest.senderId(), capturedRequest.senderId());
