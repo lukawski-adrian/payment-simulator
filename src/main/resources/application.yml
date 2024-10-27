@@ -11,7 +11,15 @@ spring:
   mvc.servlet.path: /api
   threads.virtual.enabled: true
 
-# TODO: enable actuator
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 resilience4j.retry:
   instances:
     transaction-service:
