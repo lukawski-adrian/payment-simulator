@@ -2,17 +2,15 @@ package pl.varlab.payment.transaction;
 
 import lombok.Getter;
 
-import java.util.UUID;
-
 import static lombok.Lombok.checkNotNull;
 
 @Getter
 public class TransactionException extends Exception {
-    private final UUID transactionId;
+    private final TransactionRequest transactionRequest;
 
-    public TransactionException(UUID transactionId, String message) {
+    public TransactionException(TransactionRequest transactionRequest, String message) {
         super(message);
-        this.transactionId = checkNotNull(transactionId, "transactionId cannot be null");
+        this.transactionRequest = checkNotNull(transactionRequest, "transaction request cannot be null");
     }
 
 }

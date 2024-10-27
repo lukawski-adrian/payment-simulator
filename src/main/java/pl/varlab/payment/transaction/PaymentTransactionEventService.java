@@ -5,10 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.varlab.payment.Clock;
-import pl.varlab.payment.account.InsufficientFundsException;
-import pl.varlab.payment.account.PaymentAccountGuard;
-import pl.varlab.payment.account.PaymentAccountNotFoundException;
-import pl.varlab.payment.account.PaymentAccountRepository;
+import pl.varlab.payment.account.*;
 
 import java.math.BigDecimal;
 
@@ -24,6 +21,12 @@ public class PaymentTransactionEventService {
     private final PaymentAccountRepository paymentAccountRepository;
     private final PaymentTransactionEventRepository paymentTransactionEventRepository;
     private final Clock clock;
+
+    public void blockTransaction(TransactionException transactionException) throws PaymentAccountNotFoundException {
+        // TODO: idempotence?
+        var newBlockEvent = getBlockTransactionEvent(transactionException);
+        paymentTransactionEventRepository.save(newBlockEvent);
+    }
 
     public void reportTransaction(TransactionRequest transactionRequest, Exception cause) throws PaymentAccountNotFoundException {
         // TODO: idempotence?
@@ -44,9 +47,13 @@ public class PaymentTransactionEventService {
         paymentTransactionEventRepository.save(newDepositEvent);
     }
 
+    private PaymentAccount getPaymentAccount(String accountName) throws PaymentAccountNotFoundException {
+        return paymentAccountRepository.findByName(accountName)
+                .orElseThrow(() -> new PaymentAccountNotFoundException(accountName));
+    }
+
     private PaymentTransactionEvent getWithdrawTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
-        var sender = paymentAccountRepository.findByName(tr.senderId())
-                .orElseThrow(() -> new PaymentAccountNotFoundException(tr.senderId()));
+        var sender = getPaymentAccount(tr.senderId());
 
         return new PaymentTransactionEvent()
                 .setTransactionType(WITHDRAW)
@@ -57,8 +64,7 @@ public class PaymentTransactionEventService {
     }
 
     private PaymentTransactionEvent getDepositTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
-        var recipient = paymentAccountRepository.findByName(tr.recipientId())
-                .orElseThrow(() -> new PaymentAccountNotFoundException(tr.recipientId()));
+        var recipient = getPaymentAccount(tr.recipientId());
 
         return new PaymentTransactionEvent()
                 .setTransactionType(DEPOSIT)
@@ -68,9 +74,21 @@ public class PaymentTransactionEventService {
                 .setCreatedOn(clock.now());
     }
 
+    private PaymentTransactionEvent getBlockTransactionEvent(TransactionException transactionException) throws PaymentAccountNotFoundException {
+        var tr = transactionException.getTransactionRequest();
+        var sender = getPaymentAccount(tr.senderId());
+
+        return new PaymentTransactionEvent()
+                .setTransactionType(BLOCK)
+                .setTransactionId(tr.transactionId())
+                .setAmount(BigDecimal.ZERO)
+                .setAccount(sender)
+                .setComment(transactionException.getMessage())
+                .setCreatedOn(clock.now());
+    }
+
     private PaymentTransactionEvent getReportTransactionEvent(TransactionRequest tr, Exception cause) throws PaymentAccountNotFoundException {
-        var sender = paymentAccountRepository.findByName(tr.senderId())
-                .orElseThrow(() -> new PaymentAccountNotFoundException(tr.senderId()));
+        var sender = getPaymentAccount(tr.senderId());
 
         return new PaymentTransactionEvent()
                 .setTransactionType(REPORT)
