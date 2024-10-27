@@ -23,28 +23,36 @@ public class PaymentTransactionEventService {
     private final Clock clock;
 
     public void blockTransaction(TransactionException transactionException) throws PaymentAccountNotFoundException {
-        // TODO: idempotence?
         var newBlockEvent = getBlockTransactionEvent(transactionException);
-        paymentTransactionEventRepository.save(newBlockEvent);
+        publishIfNeeded(newBlockEvent);
     }
 
     public void reportTransaction(TransactionRequest transactionRequest, Exception cause) throws PaymentAccountNotFoundException {
-        // TODO: idempotence?
         var newReportEvent = getReportTransactionEvent(transactionRequest, cause);
-        paymentTransactionEventRepository.save(newReportEvent);
+        publishIfNeeded(newReportEvent);
     }
 
     public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, PaymentAccountNotFoundException {
-        // TODO: idempotence
         paymentAccountGuard.assertAvailableFunds(transactionRequest);
         var newWithdrawEvent = getWithdrawTransactionEvent(transactionRequest);
-        paymentTransactionEventRepository.save(newWithdrawEvent);
+        publishIfNeeded(newWithdrawEvent);
     }
 
     public void deposit(TransactionRequest transactionRequest) throws PaymentAccountNotFoundException {
-        // TODO: idempotence
         var newDepositEvent = getDepositTransactionEvent(transactionRequest);
-        paymentTransactionEventRepository.save(newDepositEvent);
+        publishIfNeeded(newDepositEvent);
+    }
+
+    private void publishIfNeeded(PaymentTransactionEvent newEvent) {
+        var transactionId = newEvent.getTransactionId();
+        var transactionType = newEvent.getTransactionType();
+
+        if (paymentTransactionEventRepository.existsByTransactionIdAndTransactionType(transactionId, transactionType)) {
+            log.info("Event already exists skip publishing [{}, {}]", transactionId, transactionType);
+        } else {
+            log.info("Publishing transaction event [{}, {}]", transactionId, transactionType);
+            paymentTransactionEventRepository.save(newEvent);
+        }
     }
 
     private PaymentAccount getPaymentAccount(String accountName) throws PaymentAccountNotFoundException {
