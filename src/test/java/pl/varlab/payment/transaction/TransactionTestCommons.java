@@ -6,9 +6,16 @@ import java.util.UUID;
 public final class TransactionTestCommons {
 
     public static final UUID TRANSACTION_ID = UUID.fromString("db69dd8e-3aff-4031-b699-0452bb75095f");
+    public static final String SENDER_ID = "acc1";
+    public static final String RECIPIENT_ID = "acc2";
+    public static final BigDecimal AMOUNT = BigDecimal.valueOf(10.33d);
 
     public static TransactionRequest getTransactionRequest() {
-        return new TransactionRequest(TRANSACTION_ID, "acc1", "acc2", BigDecimal.valueOf(10.33d));
+        return new TransactionRequest(TRANSACTION_ID, SENDER_ID, RECIPIENT_ID, AMOUNT);
+    }
+
+    public static UserTransactionRequest getUserTransactionRequest() {
+        return new UserTransactionRequest(SENDER_ID, RECIPIENT_ID, AMOUNT);
     }
 
     private TransactionTestCommons() {
