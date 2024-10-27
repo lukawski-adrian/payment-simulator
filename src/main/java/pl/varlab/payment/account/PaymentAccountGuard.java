@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import pl.varlab.payment.transaction.PaymentTransactionEventRepository;
 import pl.varlab.payment.transaction.TransactionRequest;
 
+import static java.math.BigDecimal.ZERO;
+
 @Component
 @AllArgsConstructor
 public class PaymentAccountGuard {
@@ -15,7 +17,9 @@ public class PaymentAccountGuard {
         var senderId = tr.senderId();
         var amount = tr.amount();
 
-        if (paymentTransactionEventRepository.hasAvailableFunds(senderId, amount))
+        if (paymentTransactionEventRepository.getAvailableFunds(senderId)
+                .filter(funds -> ZERO.compareTo(funds.subtract(amount)) <= 0)
+                .isPresent())
             return;
 
         throw new InsufficientFundsException();
