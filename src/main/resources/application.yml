@@ -20,6 +20,7 @@ management:
       exposure:
         include: "*"
 
+
 resilience4j.retry:
   instances:
     transaction-service:
@@ -28,6 +29,9 @@ resilience4j.retry:
       # Fixed wait duration between retry attempts
       wait-duration: 1s
 
+springdoc:
+  show-actuator: true
+  api-docs.path: /api-docs
 
 logging:
   file:
