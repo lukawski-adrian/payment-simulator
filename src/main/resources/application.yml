@@ -1,10 +1,26 @@
 spring:
   application:
     name: payment-simulator
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/payments}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+  mvc.servlet.path: /api
+  threads.virtual.enabled: true
 
-server.servlet.contextPath: /api
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
-# TODO: enable actuator
+
 resilience4j.retry:
   instances:
     transaction-service:
@@ -12,3 +28,19 @@ resilience4j.retry:
       max-attempts: 3
       # Fixed wait duration between retry attempts
       wait-duration: 1s
+
+springdoc:
+  show-actuator: true
+  api-docs.path: /api-docs
+
+logging:
+  file:
+    name: logs/payments-simulator.log
+  logback:
+    rollingpolicy:
+      max-file-size: 50MB
+      max-history: 90
+      total-size-cap: 10GB
+      clean-history-on-start: false
+  level:
+    pl.varlab.payment: info

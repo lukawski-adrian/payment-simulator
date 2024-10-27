@@ -3,13 +3,11 @@ package pl.varlab.payment.transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import pl.varlab.payment.transaction.handler.TransactionHandler;
 
@@ -20,10 +18,8 @@ import static pl.varlab.payment.AsyncConfig.TRANSACTION_GUARDS_THREAD_POOL_TASK_
 import static pl.varlab.payment.AsyncConfig.TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR;
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
-@SpringBootTest
 @SpringJUnitConfig
-@ActiveProfiles(profiles = "non-async")
-public class TransactionServiceResilienceTests {
+public class TransactionServiceResilienceTests extends BaseSpringContextTest {
 
     private static final int RETRY_MAX_ATTEMPTS = 3;
 
@@ -65,12 +61,13 @@ public class TransactionServiceResilienceTests {
     public void shouldRetryTransactionProcessMaxAttemptTimes_thenRedirectToFallbackService() {
         var transactionRequest = getTransactionRequest();
 
-        doThrow(RuntimeException.class).when(transactionHandler).handle(transactionRequest);
+        var exception = new RuntimeException();
+        doThrow(exception).when(transactionHandler).handle(transactionRequest);
 
         transactionService.processTransaction(transactionRequest);
 
         verify(transactionHandler, times(RETRY_MAX_ATTEMPTS)).handle(transactionRequest);
-        verify(fallbackService).reportTransactionProcessFailure(transactionRequest);
+        verify(fallbackService).reportTransactionProcessFailure(transactionRequest, exception);
 
         verifyNoMoreInteractions(transactionHandler, fallbackService);
     }

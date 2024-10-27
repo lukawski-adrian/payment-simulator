@@ -15,7 +15,7 @@ public class InitialValidationTransactionHandler extends BaseTransactionHandler 
     @Override
     public void handle(TransactionRequest transactionRequest) {
         try {
-            // TODO: validate input request, account id, isblocked,
+            // TODO: validate input request, account id, isblocked, 2decimal places,
             validationService.validateInputRequest(transactionRequest);
             super.handle(transactionRequest);
         } catch (ValidationException e) {
