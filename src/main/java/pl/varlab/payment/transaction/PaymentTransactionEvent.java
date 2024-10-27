@@ -36,6 +36,9 @@ public class PaymentTransactionEvent {
     @Column(name = "created_on")
     private LocalDateTime createdOn;
 
+    @Column
+    private String comment;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private PaymentAccount account;

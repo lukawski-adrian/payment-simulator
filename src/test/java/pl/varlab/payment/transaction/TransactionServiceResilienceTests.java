@@ -61,12 +61,13 @@ public class TransactionServiceResilienceTests extends BaseSpringContextTest {
     public void shouldRetryTransactionProcessMaxAttemptTimes_thenRedirectToFallbackService() {
         var transactionRequest = getTransactionRequest();
 
-        doThrow(RuntimeException.class).when(transactionHandler).handle(transactionRequest);
+        var exception = new RuntimeException();
+        doThrow(exception).when(transactionHandler).handle(transactionRequest);
 
         transactionService.processTransaction(transactionRequest);
 
         verify(transactionHandler, times(RETRY_MAX_ATTEMPTS)).handle(transactionRequest);
-        verify(fallbackService).reportTransactionProcessFailure(transactionRequest);
+        verify(fallbackService).reportTransactionProcessFailure(transactionRequest, exception);
 
         verifyNoMoreInteractions(transactionHandler, fallbackService);
     }

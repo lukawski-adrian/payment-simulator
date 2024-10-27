@@ -1,0 +1,1 @@
+ALTER TABLE payment_transaction_events ADD COLUMN comment TEXT;
