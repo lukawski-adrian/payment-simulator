@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 public class PaymentAccount {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(unique = true, nullable = false, length = 64)

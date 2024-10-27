@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 import pl.varlab.payment.account.PaymentAccount;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 
 @NoArgsConstructor
@@ -20,20 +20,21 @@ import java.sql.Timestamp;
 public class PaymentTransactionEvent {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "transaction_id", nullable = false, length = 64)
     private String transactionId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type", nullable = false, length = 64)
     private TransactionType transactionType;
 
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "created_on", nullable = false)
-    private Timestamp createdOn;
+    @Column(name = "created_on")
+    private LocalDateTime createdOn;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")

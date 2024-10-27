@@ -3,6 +3,7 @@ package pl.varlab.payment.account;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.varlab.payment.Clock;
 import pl.varlab.payment.transaction.PaymentTransactionEvent;
 import pl.varlab.payment.transaction.PaymentTransactionEventRepository;
 import pl.varlab.payment.transaction.TransactionRequest;
@@ -19,6 +20,7 @@ public class PaymentAccountService {
     private final PaymentAccountGuard paymentAccountGuard;
     private final PaymentAccountRepository paymentAccountRepository;
     private final PaymentTransactionEventRepository paymentTransactionEventRepository;
+    private final Clock clock;
 
     public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, PaymentAccountNotFoundException {
         // TODO: idempotence
@@ -41,7 +43,8 @@ public class PaymentAccountService {
                 .setTransactionType(WITHDRAW)
                 .setTransactionId(tr.transactionId())
                 .setAmount(tr.amount().negate())
-                .setAccount(sender);
+                .setAccount(sender)
+                .setCreatedOn(clock.now());
     }
 
     private PaymentTransactionEvent getDepositTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
@@ -52,7 +55,8 @@ public class PaymentAccountService {
                 .setTransactionType(DEPOSIT)
                 .setTransactionId(tr.transactionId())
                 .setAccount(recipient)
-                .setAmount(tr.amount());
+                .setAmount(tr.amount())
+                .setCreatedOn(clock.now());
     }
 
 
