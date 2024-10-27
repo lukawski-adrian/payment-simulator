@@ -1,11 +1,10 @@
 package pl.varlab.payment.validation;
 
 import pl.varlab.payment.transaction.TransactionException;
-
-import java.util.UUID;
+import pl.varlab.payment.transaction.TransactionRequest;
 
 public class ValidationException extends TransactionException {
-    public ValidationException(UUID transactionId, String message) {
-        super(transactionId, message);
+    public ValidationException(TransactionRequest transactionRequest, String message) {
+        super(transactionRequest, message);
     }
 }

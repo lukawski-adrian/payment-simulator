@@ -21,6 +21,7 @@ public class TransactionService {
     public void processTransaction(TransactionRequest transactionRequest) {
         log.info("Processing transaction request: {}", transactionRequest);
         transactionHandler.handle(transactionRequest);
+        log.info("Processing transaction request has been finished: {}", transactionRequest);
     }
 
 

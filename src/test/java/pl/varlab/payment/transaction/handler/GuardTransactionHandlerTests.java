@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
-import static pl.varlab.payment.transaction.TransactionTestCommons.TRANSACTION_ID;
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
 public class GuardTransactionHandlerTests {
@@ -53,7 +52,7 @@ public class GuardTransactionHandlerTests {
     public void shouldBlockTransaction_whenFraudDetected() {
         var transactionRequest = getTransactionRequest();
 
-        var fraudException = new FraudDetectedException(TRANSACTION_ID, "err msg");
+        var fraudException = new FraudDetectedException(transactionRequest, "err msg");
         when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.failedFuture(fraudException));
         when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
 
@@ -70,7 +69,7 @@ public class GuardTransactionHandlerTests {
     public void shouldBlockTransaction_whenTransactionIsNonCompliant() {
         var transactionRequest = getTransactionRequest();
 
-        var nonCompliantException = new NonCompliantTransactionException(TRANSACTION_ID, "err msg");
+        var nonCompliantException = new NonCompliantTransactionException(transactionRequest, "err msg");
         when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
         when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.failedFuture(nonCompliantException));
 
