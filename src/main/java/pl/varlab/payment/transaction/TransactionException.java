@@ -1,4 +1,4 @@
-package pl.varlab.payment.guard;
+package pl.varlab.payment.transaction;
 
 import lombok.Getter;
 

@@ -11,12 +11,8 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import pl.varlab.payment.account.AccountNotFoundException;
-import pl.varlab.payment.account.AccountService;
-import pl.varlab.payment.account.InsufficientFundsException;
-import pl.varlab.payment.guard.FraudDetectionGuard;
+import pl.varlab.payment.transaction.handler.TransactionHandler;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static org.mockito.Mockito.*;
@@ -28,6 +24,8 @@ import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactio
 @SpringJUnitConfig
 @ActiveProfiles(profiles = "non-async")
 public class TransactionServiceResilienceTests {
+
+    private static final int RETRY_MAX_ATTEMPTS = 3;
 
     @TestConfiguration
     public static class TestAsyncConfig implements AsyncConfigurer {
@@ -50,10 +48,7 @@ public class TransactionServiceResilienceTests {
     }
 
     @MockBean
-    private AccountService accountService;
-
-    @MockBean
-    private FraudDetectionGuard fraudDetectionGuard;
+    private TransactionHandler transactionHandler;
 
     @MockBean
     private TransactionFallbackService fallbackService;
@@ -63,22 +58,35 @@ public class TransactionServiceResilienceTests {
 
     @BeforeEach
     void setUp() {
-        reset(accountService, fraudDetectionGuard, fallbackService);
+        reset(transactionHandler, fallbackService);
     }
 
     @Test
-    public void shouldRetryTransactionProcess3Times_thenRedirectToFallbackService() throws InsufficientFundsException, AccountNotFoundException {
+    public void shouldRetryTransactionProcessMaxAttemptTimes_thenRedirectToFallbackService() {
         var transactionRequest = getTransactionRequest();
 
-        when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.failedFuture(new RuntimeException()));
+        doThrow(RuntimeException.class).when(transactionHandler).handle(transactionRequest);
 
         transactionService.processTransaction(transactionRequest);
 
-        verify(accountService, times(3)).withdraw(transactionRequest);
-        verify(fraudDetectionGuard, times(3)).assertNotFraud(transactionRequest);
+        verify(transactionHandler, times(RETRY_MAX_ATTEMPTS)).handle(transactionRequest);
         verify(fallbackService).reportTransactionProcessFailure(transactionRequest);
 
-        verifyNoMoreInteractions(accountService, fraudDetectionGuard, fallbackService);
+        verifyNoMoreInteractions(transactionHandler, fallbackService);
+    }
+
+    @Test
+    public void shouldProcessTransactionAfterFirstRetry() {
+        var transactionRequest = getTransactionRequest();
+
+        doThrow(RuntimeException.class).doNothing().when(transactionHandler).handle(transactionRequest);
+
+        transactionService.processTransaction(transactionRequest);
+
+        verify(transactionHandler, times(RETRY_MAX_ATTEMPTS - 1)).handle(transactionRequest);
+
+        verifyNoMoreInteractions(transactionHandler);
+        verifyNoInteractions(fallbackService);
     }
 
 }

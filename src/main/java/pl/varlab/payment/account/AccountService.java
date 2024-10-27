@@ -28,6 +28,12 @@ public class AccountService {
     }
 
     public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, AccountNotFoundException {
+         /*
+         *  In transaction
+         *  account found
+         *  Insufficient funds SELECT account_id, SUM(amount) FROM transaction_events WHERE account_id = 'acc1' GROUP BY account_id > amount
+         *  INSERT WITHDRAW
+         */
         var amount = transactionRequest.amount();
         var senderId = transactionRequest.senderId();
 
@@ -66,6 +72,13 @@ public class AccountService {
     }
 
     private void internalDeposit(String recipientId, BigDecimal amount) {
+        /*
+         *  In transaction
+         *  account found
+         *  Insufficient funds SELECT account_id, SUM(amount) FROM transaction_events WHERE account_id = 'acc1' GROUP BY account_id > amount
+         *  if is WITHDRAW for transaction?
+         *  INSERT DEPOSIT
+         */
         var accountBalance = accounts.get(recipientId);
         // TODO: verify second math context function
         var updateAccountBalance = accountBalance.add(amount);
