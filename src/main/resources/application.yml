@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: payment-simulator
+
+server.servlet.contextPath: /api
+
+# TODO: enable actuator
+resilience4j.retry:
+  instances:
+    transaction-service:
+      # Maximum number of attempts (including the initial call as the first attempt)
+      max-attempts: 3
+      # Fixed wait duration between retry attempts
+      wait-duration: 1s
