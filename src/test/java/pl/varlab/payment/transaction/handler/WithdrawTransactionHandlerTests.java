@@ -2,8 +2,8 @@ package pl.varlab.payment.transaction.handler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.varlab.payment.account.AccountNotFoundException;
-import pl.varlab.payment.account.AccountService;
+import pl.varlab.payment.account.PaymentAccountNotFoundException;
+import pl.varlab.payment.account.PaymentAccountService;
 import pl.varlab.payment.account.InsufficientFundsException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,7 +14,7 @@ import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactio
 public class WithdrawTransactionHandlerTests {
 
     private static final String UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE = "Unexpected handler exception";
-    private final AccountService accountService = mock(AccountService.class);
+    private final PaymentAccountService accountService = mock(PaymentAccountService.class);
     private final TransactionHandler nextHandler = mock(TransactionHandler.class);
     private WithdrawTransactionHandler withdrawTransactionHandler;
 
@@ -26,7 +26,7 @@ public class WithdrawTransactionHandlerTests {
     }
 
     @Test
-    public void shouldWithdrawFunds() throws InsufficientFundsException, AccountNotFoundException {
+    public void shouldWithdrawFunds() throws InsufficientFundsException, PaymentAccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
         withdrawTransactionHandler.handle(transactionRequest);
@@ -37,7 +37,7 @@ public class WithdrawTransactionHandlerTests {
     }
 
     @Test
-    public void shouldNotWithdrawFunds_whenInsufficientFunds() throws InsufficientFundsException, AccountNotFoundException {
+    public void shouldNotWithdrawFunds_whenInsufficientFunds() throws InsufficientFundsException, PaymentAccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
         doThrow(InsufficientFundsException.class).when(accountService).withdraw(transactionRequest);
@@ -50,10 +50,10 @@ public class WithdrawTransactionHandlerTests {
     }
 
     @Test
-    public void shouldNotWithdrawFunds_whenSenderAccountNotFound() throws InsufficientFundsException, AccountNotFoundException {
+    public void shouldNotWithdrawFunds_whenSenderAccountNotFound() throws InsufficientFundsException, PaymentAccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
-        doThrow(AccountNotFoundException.class).when(accountService).withdraw(transactionRequest);
+        doThrow(PaymentAccountNotFoundException.class).when(accountService).withdraw(transactionRequest);
 
         withdrawTransactionHandler.handle(transactionRequest);
 
@@ -63,7 +63,7 @@ public class WithdrawTransactionHandlerTests {
     }
 
     @Test
-    public void shouldNotWithdrawFundsAndThrowException_whenUnexpectedExceptionOccurred() throws InsufficientFundsException, AccountNotFoundException {
+    public void shouldNotWithdrawFundsAndThrowException_whenUnexpectedExceptionOccurred() throws InsufficientFundsException, PaymentAccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
         doThrow(new IllegalArgumentException(UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE)).when(accountService).withdraw(transactionRequest);

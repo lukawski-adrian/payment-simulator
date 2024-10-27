@@ -2,8 +2,8 @@ package pl.varlab.payment.transaction.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import pl.varlab.payment.account.AccountNotFoundException;
-import pl.varlab.payment.account.AccountService;
+import pl.varlab.payment.account.PaymentAccountNotFoundException;
+import pl.varlab.payment.account.PaymentAccountService;
 import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.transaction.TransactionRequest;
 
@@ -11,7 +11,7 @@ import pl.varlab.payment.transaction.TransactionRequest;
 @AllArgsConstructor
 public class WithdrawTransactionHandler extends BaseTransactionHandler {
 
-    private final AccountService accountService;
+    private final PaymentAccountService accountService;
 
     @Override
     public void handle(TransactionRequest transactionRequest) {
@@ -20,7 +20,7 @@ public class WithdrawTransactionHandler extends BaseTransactionHandler {
             super.handle(transactionRequest);
         } catch (InsufficientFundsException e) {
             log.warn("Insufficient funds on sender account for payment request: {}", transactionRequest);
-        } catch (AccountNotFoundException e) {
+        } catch (PaymentAccountNotFoundException e) {
             log.warn("Sender accountId not found: {}", transactionRequest);
         }
     }

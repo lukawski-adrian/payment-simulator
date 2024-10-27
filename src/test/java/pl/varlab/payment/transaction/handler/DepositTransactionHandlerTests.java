@@ -2,8 +2,8 @@ package pl.varlab.payment.transaction.handler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.varlab.payment.account.AccountNotFoundException;
-import pl.varlab.payment.account.AccountService;
+import pl.varlab.payment.account.PaymentAccountNotFoundException;
+import pl.varlab.payment.account.PaymentAccountService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -13,7 +13,7 @@ import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactio
 public class DepositTransactionHandlerTests {
 
     private static final String UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE = "Unexpected handler exception";
-    private final AccountService accountService = mock(AccountService.class);
+    private final PaymentAccountService accountService = mock(PaymentAccountService.class);
     private final TransactionHandler nextHandler = mock(TransactionHandler.class);
     private DepositTransactionHandler depositTransactionHandler = new DepositTransactionHandler(accountService);
 
@@ -25,7 +25,7 @@ public class DepositTransactionHandlerTests {
     }
 
     @Test
-    public void shouldDepositFunds() throws AccountNotFoundException {
+    public void shouldDepositFunds() throws PaymentAccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
         depositTransactionHandler.handle(transactionRequest);
@@ -36,10 +36,10 @@ public class DepositTransactionHandlerTests {
     }
 
     @Test
-    public void shouldNotDepositFunds_whenSenderAccountNotFound() throws AccountNotFoundException {
+    public void shouldNotDepositFunds_whenSenderAccountNotFound() throws PaymentAccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
-        doThrow(AccountNotFoundException.class).when(accountService).deposit(transactionRequest);
+        doThrow(PaymentAccountNotFoundException.class).when(accountService).deposit(transactionRequest);
 
         depositTransactionHandler.handle(transactionRequest);
 
@@ -49,7 +49,7 @@ public class DepositTransactionHandlerTests {
     }
 
     @Test
-    public void shouldNotDepositFundsAndThrowException_whenUnexpectedExceptionOccurred() throws AccountNotFoundException {
+    public void shouldNotDepositFundsAndThrowException_whenUnexpectedExceptionOccurred() throws PaymentAccountNotFoundException {
         var transactionRequest = getTransactionRequest();
 
         doThrow(new IllegalArgumentException(UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE)).when(accountService).deposit(transactionRequest);

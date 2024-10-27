@@ -14,20 +14,21 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service
 @AllArgsConstructor
 // TODO: tests
-public class AccountService {
+public class PaymentAccountService {
 
     private final ConcurrentHashMap<String, BigDecimal> accounts = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
     private final AuditService auditService;
+    private final PaymentAccountRepository accountRepository;
 
-    private ReentrantLock getLockForKey(String accountId) throws AccountNotFoundException {
+    private ReentrantLock getLockForKey(String accountId) throws PaymentAccountNotFoundException {
         if (locks.containsKey(accountId))
             return locks.get(accountId);
 
-        throw new AccountNotFoundException(accountId);
+        throw new PaymentAccountNotFoundException(accountId);
     }
 
-    public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, AccountNotFoundException {
+    public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, PaymentAccountNotFoundException {
          /*
          *  In transaction
          *  account found
@@ -47,7 +48,7 @@ public class AccountService {
         }
     }
 
-    public void deposit(TransactionRequest transactionRequest) throws AccountNotFoundException {
+    public void deposit(TransactionRequest transactionRequest) throws PaymentAccountNotFoundException {
         var amount = transactionRequest.amount();
         var recipientId = transactionRequest.recipientId();
 
