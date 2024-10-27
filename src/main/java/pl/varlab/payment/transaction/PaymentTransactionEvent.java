@@ -9,6 +9,7 @@ import pl.varlab.payment.account.PaymentAccount;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @NoArgsConstructor
@@ -43,5 +44,12 @@ public class PaymentTransactionEvent {
     @JoinColumn(name = "account_id")
     private PaymentAccount account;
 
+    public PaymentTransactionEvent setTransactionId(UUID transactionId) {
+        if (transactionId == null)
+            return this;
+
+        this.transactionId = transactionId.toString();
+        return this;
+    }
 }
 

@@ -11,13 +11,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import pl.varlab.payment.common.ErrorResponse;
 
-import java.math.BigDecimal;
 import java.net.URI;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
 
 public class TransactionControllerTests extends BaseSpringContextTest {
@@ -69,10 +69,6 @@ public class TransactionControllerTests extends BaseSpringContextTest {
 
         verify(transactionService).processTransaction(paymentRequest);
         verifyNoMoreInteractions(transactionService);
-    }
-
-    private static TransactionRequest getTransactionRequest() {
-        return new TransactionRequest("tx1", "acc1", "acc2", BigDecimal.valueOf(10.33d));
     }
 
     private String getInternalServerErrorJsonResponse() throws JsonProcessingException {
