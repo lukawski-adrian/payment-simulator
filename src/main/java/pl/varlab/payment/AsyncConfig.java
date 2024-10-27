@@ -14,7 +14,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
-@Profile("!non-async")
+@Profile("!test")
 public class AsyncConfig implements AsyncConfigurer {
 
     public static final String TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR = "transactionProcessorsThreadPoolTaskExecutor";

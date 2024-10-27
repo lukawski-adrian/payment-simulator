@@ -6,10 +6,9 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
-
-
-server.servlet.contextPath: /api
-
+  jpa:
+    open-in-view: false
+  mvc.servlet.path: /api
 
 # TODO: enable actuator
 resilience4j.retry:
