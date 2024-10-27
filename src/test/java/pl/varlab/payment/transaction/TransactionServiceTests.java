@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-// TODO: distinguish between unit and integration tests
+
 public class TransactionServiceTests {
 
     private final TransactionHandler transactionHandler = mock(TransactionHandler.class);

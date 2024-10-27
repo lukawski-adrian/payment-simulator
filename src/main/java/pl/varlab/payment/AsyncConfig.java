@@ -28,7 +28,6 @@ public class AsyncConfig implements AsyncConfigurer {
     @Bean(name = TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR)
     public Executor transactionProcessorThreadPoolTaskExecutor() {
         var threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        // TODO: consider is queue size config needed
         threadPoolTaskExecutor.setThreadNamePrefix("transaction-processors-");
         threadPoolTaskExecutor.setCorePoolSize(10);
         threadPoolTaskExecutor.setMaxPoolSize(100);
@@ -39,7 +38,6 @@ public class AsyncConfig implements AsyncConfigurer {
     @Bean(name = TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR)
     public Executor transactionGuardThreadPoolTaskExecutor() {
         var threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        // TODO: consider is queue size config needed
         threadPoolTaskExecutor.setThreadNamePrefix("transaction-guards-");
         threadPoolTaskExecutor.setCorePoolSize(50);
         threadPoolTaskExecutor.setMaxPoolSize(500);

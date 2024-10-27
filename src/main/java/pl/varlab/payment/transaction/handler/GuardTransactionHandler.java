@@ -38,15 +38,12 @@ public class GuardTransactionHandler extends BaseTransactionHandler {
     }
 
     private void verifyTransaction(TransactionRequest transactionRequest) throws ExecutionException {
-        // TODO: consider multiple concurrent transactions
         // TODO: enable virtual threads
-        // TODO: fees
         // TODO: consider common transaction guard interface
         var fraudDetectionResult = this.fraudDetectionGuard.assertNotFraud(transactionRequest);
         var complianceResult = this.complianceGuard.assertCompliant(transactionRequest);
 
         try {
-            // TODO: wrap and retry in case of exception, move to other queue after retry (specific exception type?)
             CompletableFuture.allOf(fraudDetectionResult, complianceResult).get(5, TimeUnit.SECONDS);
         } catch (InterruptedException | TimeoutException e) {
             log.error("Transaction guard interrupted or timeout exceeded", e);

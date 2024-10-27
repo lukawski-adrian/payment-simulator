@@ -19,8 +19,6 @@ public class FraudDetectionGuard {
     public CompletableFuture<Void> assertNotFraud(TransactionRequest transactionRequest) {
         try {
             log.info("Fraud detection verification: {}", transactionRequest);
-
-            // TODO: what in case of runtime exception?
             Thread.sleep(500);
             if (isFraudDetected(transactionRequest.amount())) {
                 var fraudException = new FraudDetectedException(transactionRequest, STR."Fraud detected (divisor \{FRAUD_DIVISOR})");
