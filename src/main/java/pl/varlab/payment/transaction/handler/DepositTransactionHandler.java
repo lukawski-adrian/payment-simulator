@@ -8,7 +8,7 @@ import pl.varlab.payment.transaction.TransactionRequest;
 
 @Slf4j
 @AllArgsConstructor
-public class DepositTransactionHandler extends BaseTransactionHandler {
+public final class DepositTransactionHandler extends BaseTransactionHandler {
 
     private final PaymentTransactionEventService transactionEventService;
 

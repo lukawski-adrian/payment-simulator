@@ -9,7 +9,7 @@ import pl.varlab.payment.transaction.TransactionRequest;
 
 @Slf4j
 @AllArgsConstructor
-public class WithdrawTransactionHandler extends BaseTransactionHandler {
+public final class WithdrawTransactionHandler extends BaseTransactionHandler {
 
     private final PaymentTransactionEventService transactionEventService;
 

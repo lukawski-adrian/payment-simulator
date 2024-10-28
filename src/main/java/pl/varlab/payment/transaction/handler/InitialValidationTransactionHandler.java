@@ -8,7 +8,7 @@ import pl.varlab.payment.validation.ValidationService;
 
 @Slf4j
 @AllArgsConstructor
-public class InitialValidationTransactionHandler extends BaseTransactionHandler {
+public final class InitialValidationTransactionHandler extends BaseTransactionHandler {
 
     private final ValidationService validationService;
 

@@ -15,7 +15,7 @@ import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @AllArgsConstructor
-public class GuardTransactionHandler extends BaseTransactionHandler {
+public final class GuardTransactionHandler extends BaseTransactionHandler {
 
     private final FraudDetectionGuard fraudDetectionGuard;
     private final ComplianceGuard complianceGuard;
@@ -38,7 +38,6 @@ public class GuardTransactionHandler extends BaseTransactionHandler {
     }
 
     private void verifyTransaction(TransactionRequest transactionRequest) throws ExecutionException {
-        // TODO: enable virtual threads
         // TODO: consider common transaction guard interface
         var fraudDetectionResult = this.fraudDetectionGuard.assertNotFraud(transactionRequest);
         var complianceResult = this.complianceGuard.assertCompliant(transactionRequest);

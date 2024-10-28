@@ -5,7 +5,8 @@ import pl.varlab.payment.transaction.TransactionRequest;
 
 
 @Setter
-class BaseTransactionHandler implements TransactionHandler {
+sealed class BaseTransactionHandler implements TransactionHandler permits InitialValidationTransactionHandler, WithdrawTransactionHandler,
+GuardTransactionHandler, DepositTransactionHandler{
 
     private TransactionHandler handler;
 
