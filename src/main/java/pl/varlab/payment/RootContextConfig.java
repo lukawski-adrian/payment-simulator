@@ -21,7 +21,7 @@ public class RootContextConfig {
                                                  ComplianceGuard complianceGuard,
                                                  TransactionBlocker transactionBlocker) {
         var validationHandler = new InitialValidationTransactionHandler(paymentTransactionEventGuard, paymentAccountGuard);
-        var withdrawHandler = new WithdrawTransactionHandler(transactionEventService);
+        var withdrawHandler = new WithdrawTransactionHandler(transactionEventService, transactionBlocker);
         var verificationHandler = new GuardTransactionHandler(fraudDetectionGuard, complianceGuard, transactionBlocker);
         var depositHandler = new DepositTransactionHandler(transactionEventService, transactionBlocker);
 

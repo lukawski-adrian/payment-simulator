@@ -33,8 +33,9 @@ public class PaymentTransactionEventService {
         publishIfNeeded(newReportEvent);
     }
 
-    public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, PaymentAccountNotFoundException {
+    public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, PaymentAccountNotFoundException, FraudDetectedException {
         paymentTransactionEventGuard.assertAvailableFunds(transactionRequest);
+        paymentTransactionEventGuard.assertConsistentWithdraw(transactionRequest);
         var newWithdrawEvent = getWithdrawTransactionEvent(transactionRequest);
         publishIfNeeded(newWithdrawEvent);
     }

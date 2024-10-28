@@ -19,4 +19,6 @@ public interface PaymentTransactionEventRepository extends JpaRepository<Payment
     Optional<BigDecimal> getAvailableFunds(@Param("accountName") String accountName);
 
     boolean existsByTransactionIdAndTransactionTypeAndAmount(UUID transactionId, TransactionType transactionType, BigDecimal amount);
+
+    Optional<PaymentTransactionEvent> findByTransactionIdAndTransactionType(UUID transactionId, TransactionType transactionType);
 }

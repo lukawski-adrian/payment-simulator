@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.account.PaymentAccountNotFoundException;
+import pl.varlab.payment.guard.FraudDetectedException;
 import pl.varlab.payment.transaction.PaymentTransactionEventService;
+import pl.varlab.payment.transaction.TransactionBlocker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -15,18 +17,19 @@ public class WithdrawTransactionHandlerTests {
 
     private static final String UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE = "Unexpected handler exception";
     private final PaymentTransactionEventService transactionEventService = mock(PaymentTransactionEventService.class);
+    private final TransactionBlocker transactionBlocker = mock(TransactionBlocker.class);
     private final TransactionHandler nextHandler = mock(TransactionHandler.class);
     private WithdrawTransactionHandler withdrawTransactionHandler;
 
     @BeforeEach
     void setUp() {
-        reset(transactionEventService, nextHandler);
-        withdrawTransactionHandler = new WithdrawTransactionHandler(transactionEventService);
+        reset(transactionEventService, nextHandler, transactionBlocker);
+        withdrawTransactionHandler = new WithdrawTransactionHandler(transactionEventService, transactionBlocker);
         withdrawTransactionHandler.setHandler(nextHandler);
     }
 
     @Test
-    public void shouldWithdrawFunds() throws InsufficientFundsException, PaymentAccountNotFoundException {
+    public void shouldWithdrawFunds() throws InsufficientFundsException, PaymentAccountNotFoundException, FraudDetectedException {
         var transactionRequest = getTransactionRequest();
 
         withdrawTransactionHandler.handle(transactionRequest);
@@ -34,10 +37,11 @@ public class WithdrawTransactionHandlerTests {
         verify(transactionEventService).withdraw(transactionRequest);
         verify(nextHandler).handle(transactionRequest);
         verifyNoMoreInteractions(transactionEventService, nextHandler);
+        verifyNoInteractions(transactionBlocker);
     }
 
     @Test
-    public void shouldNotWithdrawFunds_whenInsufficientFunds() throws InsufficientFundsException, PaymentAccountNotFoundException {
+    public void shouldNotWithdrawFunds_whenInsufficientFunds() throws InsufficientFundsException, PaymentAccountNotFoundException, FraudDetectedException {
         var transactionRequest = getTransactionRequest();
 
         doThrow(InsufficientFundsException.class).when(transactionEventService).withdraw(transactionRequest);
@@ -47,10 +51,11 @@ public class WithdrawTransactionHandlerTests {
         verify(transactionEventService).withdraw(transactionRequest);
         verifyNoMoreInteractions(transactionEventService);
         verifyNoInteractions(nextHandler);
+        verifyNoInteractions(transactionBlocker);
     }
 
     @Test
-    public void shouldNotWithdrawFunds_whenSenderAccountNotFound() throws InsufficientFundsException, PaymentAccountNotFoundException {
+    public void shouldNotWithdrawFunds_whenSenderAccountNotFound() throws InsufficientFundsException, PaymentAccountNotFoundException, FraudDetectedException {
         var transactionRequest = getTransactionRequest();
 
         doThrow(PaymentAccountNotFoundException.class).when(transactionEventService).withdraw(transactionRequest);
@@ -59,11 +64,11 @@ public class WithdrawTransactionHandlerTests {
 
         verify(transactionEventService).withdraw(transactionRequest);
         verifyNoMoreInteractions(transactionEventService);
-        verifyNoInteractions(nextHandler);
+        verifyNoInteractions(nextHandler, transactionBlocker);
     }
 
     @Test
-    public void shouldNotWithdrawFundsAndThrowException_whenUnexpectedExceptionOccurred() throws InsufficientFundsException, PaymentAccountNotFoundException {
+    public void shouldNotWithdrawFundsAndThrowException_whenUnexpectedExceptionOccurred() throws InsufficientFundsException, PaymentAccountNotFoundException, FraudDetectedException {
         var transactionRequest = getTransactionRequest();
 
         doThrow(new IllegalArgumentException(UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE)).when(transactionEventService).withdraw(transactionRequest);
@@ -77,6 +82,6 @@ public class WithdrawTransactionHandlerTests {
 
         verify(transactionEventService).withdraw(transactionRequest);
         verifyNoMoreInteractions(transactionEventService);
-        verifyNoInteractions(nextHandler);
+        verifyNoInteractions(nextHandler, transactionBlocker);
     }
 }

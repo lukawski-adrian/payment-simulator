@@ -19,7 +19,7 @@ public final class InitialValidationTransactionHandler extends BaseTransactionHa
     @Override
     public void handle(TransactionRequest transactionRequest) {
         try {
-            // TODO: verify if account is blocked
+            // TODO: verify if accounts or transaction is blocked or reported
             paymentAccountGuard.assertAccountExists(transactionRequest.senderId());
             paymentAccountGuard.assertAccountExists(transactionRequest.recipientId());
             paymentTransactionEventGuard.assertAvailableFunds(transactionRequest);

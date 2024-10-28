@@ -35,4 +35,16 @@ public class PaymentTransactionEventGuard {
 
         throw new FraudDetectedException(tr, STR."No corresponding WITHDRAW transaction found for \{transactionId}");
     }
+
+    public void assertConsistentWithdraw(TransactionRequest tr) throws FraudDetectedException {
+        var transactionId = tr.transactionId();
+        var amount = tr.amount();
+
+        var duplicatedWithdrawExists = paymentTransactionEventRepository.findByTransactionIdAndTransactionType(transactionId, WITHDRAW)
+                .filter(e -> e.getAmount().compareTo(amount.negate()) != 0)
+                .isPresent();
+
+        if (duplicatedWithdrawExists)
+            throw new FraudDetectedException(tr, STR."Inconsistent WITHDRAW transaction found for \{transactionId}");
+    }
 }
