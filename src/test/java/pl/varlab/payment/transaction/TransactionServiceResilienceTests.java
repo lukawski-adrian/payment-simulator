@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import pl.varlab.payment.BaseSpringContextTest;
 import pl.varlab.payment.transaction.handler.TransactionHandler;
 
 import java.util.concurrent.Executor;

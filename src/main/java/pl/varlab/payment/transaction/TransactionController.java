@@ -1,5 +1,6 @@
 package pl.varlab.payment.transaction;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,8 @@ public class TransactionController extends BaseController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void newTransaction(@RequestBody TransactionRequest transactionRequest) {
+    @Bulkhead(name = "transaction-controller")
+    public void newTransaction(@RequestBody TransactionRequest transactionRequest) throws InterruptedException {
         transactionService.processTransaction(transactionRequest);
     }
 

@@ -1,47 +1,18 @@
 package pl.varlab.payment.transaction;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import pl.varlab.payment.common.ErrorResponse;
-
-import java.net.URI;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
 
-public class TransactionControllerTests extends BaseSpringContextTest {
-
-    private static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error";
-    private static final String EMPTY = "";
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    private static final URI TRANSACTIONS_ENDPOINT = URI.create("/v1/transactions");
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
-    private TransactionService transactionService;
-
-    @BeforeEach
-    void setUp() {
-        reset(transactionService);
-    }
-
+public class TransactionControllerTests extends BaseTransactionControllerTest {
 
     @Test
     void shouldReturnAcceptedStatus_whenReceivedTransactionRequest() throws Exception {
@@ -80,7 +51,6 @@ public class TransactionControllerTests extends BaseSpringContextTest {
     }
 
 
-
     @Test
     void shouldReturnInternalServerErrorStatus_whenErrorOccurred() throws Exception {
         var userRequest = getTransactionRequest();
@@ -96,16 +66,6 @@ public class TransactionControllerTests extends BaseSpringContextTest {
 
         verify(transactionService).processTransaction(userRequest);
         verifyNoMoreInteractions(transactionService);
-    }
-
-    private String getInternalServerErrorJsonResponse() throws JsonProcessingException {
-        var errorResponse = new ErrorResponse(INTERNAL_SERVER_ERROR.name(), INTERNAL_SERVER_ERROR_MESSAGE);
-        return MAPPER.writeValueAsString(errorResponse);
-    }
-
-    private String getUnprocessableEntityErrorJsonResponse(String errorMessage) throws JsonProcessingException {
-        var errorResponse = new ErrorResponse(UNPROCESSABLE_ENTITY.name(), errorMessage);
-        return MAPPER.writeValueAsString(errorResponse);
     }
 
 }
