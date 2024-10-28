@@ -22,7 +22,7 @@ public class RootContextConfig {
         var validationHandler = new InitialValidationTransactionHandler(validationService);
         var withdrawHandler = new WithdrawTransactionHandler(transactionEventService);
         var verificationHandler = new GuardTransactionHandler(fraudDetectionGuard, complianceGuard, transactionBlocker);
-        var depositHandler = new DepositTransactionHandler(transactionEventService);
+        var depositHandler = new DepositTransactionHandler(transactionEventService, transactionBlocker);
 
         validationHandler.setHandler(withdrawHandler);
         withdrawHandler.setHandler(verificationHandler);

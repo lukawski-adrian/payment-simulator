@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.varlab.payment.Clock;
 import pl.varlab.payment.account.*;
+import pl.varlab.payment.guard.FraudDetectedException;
 
 import java.math.BigDecimal;
 
@@ -17,7 +18,7 @@ import static pl.varlab.payment.transaction.TransactionType.*;
 @Slf4j
 // TODO: tests
 public class PaymentTransactionEventService {
-    private final PaymentAccountGuard paymentAccountGuard;
+    private final PaymentTransactionEventGuard paymentAccountGuard;
     private final PaymentAccountRepository paymentAccountRepository;
     private final PaymentTransactionEventRepository paymentTransactionEventRepository;
     private final Clock clock;
@@ -38,7 +39,8 @@ public class PaymentTransactionEventService {
         publishIfNeeded(newWithdrawEvent);
     }
 
-    public void deposit(TransactionRequest transactionRequest) throws PaymentAccountNotFoundException {
+    public void deposit(TransactionRequest transactionRequest) throws PaymentAccountNotFoundException, FraudDetectedException {
+        paymentAccountGuard.assertCorrespondingWithdraw(transactionRequest);
         var newDepositEvent = getDepositTransactionEvent(transactionRequest);
         publishIfNeeded(newDepositEvent);
     }
