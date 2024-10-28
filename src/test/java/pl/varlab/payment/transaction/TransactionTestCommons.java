@@ -14,10 +14,6 @@ public final class TransactionTestCommons {
         return new TransactionRequest(TRANSACTION_ID, SENDER_ID, RECIPIENT_ID, AMOUNT);
     }
 
-    public static UserTransactionRequest getUserTransactionRequest() {
-        return new UserTransactionRequest(SENDER_ID, RECIPIENT_ID, AMOUNT);
-    }
-
     private TransactionTestCommons() {
         // prevent initialization
     }

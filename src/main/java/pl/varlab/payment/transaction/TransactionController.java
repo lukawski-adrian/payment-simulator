@@ -15,9 +15,8 @@ public class TransactionController extends BaseController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void newTransaction(@RequestBody UserTransactionRequest userTransactionRequest) {
-        var newTransactionRequest = userTransactionRequest.toTransactionRequest();
-        transactionService.processTransaction(newTransactionRequest);
+    public void newTransaction(@RequestBody TransactionRequest transactionRequest) {
+        transactionService.processTransaction(transactionRequest);
     }
 
 }
