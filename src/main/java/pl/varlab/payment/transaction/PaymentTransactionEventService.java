@@ -46,8 +46,9 @@ public class PaymentTransactionEventService {
     private void publishIfNeeded(PaymentTransactionEvent newEvent) {
         var transactionId = newEvent.getTransactionId();
         var transactionType = newEvent.getTransactionType();
+        var amount = newEvent.getAmount();
 
-        if (paymentTransactionEventRepository.existsByTransactionIdAndTransactionType(transactionId, transactionType)) {
+        if (paymentTransactionEventRepository.existsByTransactionIdAndTransactionTypeAndAmount(transactionId, transactionType, amount)) {
             log.info("Event already exists skip publishing [{}, {}]", transactionId, transactionType);
         } else {
             log.info("Publishing transaction event [{}, {}]", transactionId, transactionType);
