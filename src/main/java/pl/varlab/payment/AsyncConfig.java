@@ -17,22 +17,11 @@ import java.util.concurrent.Executor;
 @Profile("!test")
 public class AsyncConfig implements AsyncConfigurer {
 
-    public static final String TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR = "transactionProcessorsThreadPoolTaskExecutor";
     public static final String TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR = "transactionGuardsThreadPoolTaskExecutor";
 
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new CustomAsyncExceptionHandler();
-    }
-
-    @Bean(name = TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR)
-    public Executor transactionProcessorThreadPoolTaskExecutor() {
-        var threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setThreadNamePrefix("transaction-processors-");
-        threadPoolTaskExecutor.setCorePoolSize(10);
-        threadPoolTaskExecutor.setMaxPoolSize(100);
-        threadPoolTaskExecutor.initialize();
-        return threadPoolTaskExecutor;
     }
 
     @Bean(name = TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR)

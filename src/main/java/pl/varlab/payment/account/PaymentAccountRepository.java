@@ -8,4 +8,5 @@ public interface PaymentAccountRepository extends JpaRepository<PaymentAccount, 
 
     Optional<PaymentAccount> findByName(String accountName);
 
+    boolean existsByName(String accountName);
 }

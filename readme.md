@@ -37,7 +37,7 @@ Assumptions:
    - prepared for extension -> `chain of responsibility` design pattern
    - next transaction steps clearly isolated by `pl.varlab.payment.transaction.handler.TransactionHandler` interface
    - utilizes a few shorter (smaller) instead of single long-running database transactions
- - scalable, lightweight, fast, modern:
+ - scalable, lightweight, modern:
    - synchronization point between instances has been designed on the database transaction level
    - `async` and `paralell` transactions processing (separate dedicated thread pool `guard` checks)
    - utilizes lightweight `java21 virtual threads`
@@ -57,7 +57,8 @@ Assumptions:
 - authorization
 - docker
 - more unit tests
-- more integration tests
+- more `@SpringBootTest` tests
+- integration tests with `Testcontainers`
 - account available funds endpoint
 - compliance endpoint
 - retry `async` mechanism

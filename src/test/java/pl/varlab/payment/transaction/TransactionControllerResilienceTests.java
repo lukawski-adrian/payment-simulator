@@ -19,7 +19,7 @@ import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactio
 public class TransactionControllerResilienceTests extends BaseTransactionControllerTest {
 
     private static final int MAX_CONCURRENT_CALLS = 2;
-    private static final int HTTP_ACCEPTED_STATUS = 202;
+    private static final int HTTP_OK_STATUS = 200;
     private static final int HTTP_TOO_MANY_REQUESTS_STATUS = 429;
 
     @ParameterizedTest
@@ -44,7 +44,7 @@ public class TransactionControllerResilienceTests extends BaseTransactionControl
         int countOthers = 0;
         for (var httpResponseStatus : responseStatuses)
             switch (httpResponseStatus.get(5, TimeUnit.SECONDS)) {
-                case HTTP_ACCEPTED_STATUS -> countProcessed++;
+                case HTTP_OK_STATUS -> countProcessed++;
                 case HTTP_TOO_MANY_REQUESTS_STATUS -> countBlocked++;
                 default -> countOthers++;
             }

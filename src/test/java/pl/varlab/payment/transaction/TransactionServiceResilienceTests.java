@@ -16,7 +16,6 @@ import java.util.concurrent.Executor;
 
 import static org.mockito.Mockito.*;
 import static pl.varlab.payment.AsyncConfig.TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR;
-import static pl.varlab.payment.AsyncConfig.TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR;
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
 @SpringJUnitConfig
@@ -26,11 +25,6 @@ public class TransactionServiceResilienceTests extends BaseSpringContextTest {
 
     @TestConfiguration
     public static class TestAsyncConfig implements AsyncConfigurer {
-
-        @Bean(name = TRANSACTION_PROCESSORS_THREAD_POOL_TASK_EXECUTOR)
-        public Executor transactionProcessorThreadPoolTaskExecutor() {
-            return new SimpleAsyncTaskExecutor();
-        }
 
         @Bean(name = TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR)
         public Executor transactionGuardThreadPoolTaskExecutor() {

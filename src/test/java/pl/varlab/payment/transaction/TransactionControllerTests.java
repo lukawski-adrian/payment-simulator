@@ -22,7 +22,7 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
         this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(transactionRequestJsonBody))
-                .andExpect(status().isAccepted())
+                .andExpect(status().isOk())
                 .andExpect(content().string(EMPTY));
 
         verify(transactionService).processTransaction(userRequest);

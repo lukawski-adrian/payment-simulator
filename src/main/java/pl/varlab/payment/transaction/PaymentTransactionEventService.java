@@ -18,7 +18,7 @@ import static pl.varlab.payment.transaction.TransactionType.*;
 @Slf4j
 // TODO: tests
 public class PaymentTransactionEventService {
-    private final PaymentTransactionEventGuard paymentAccountGuard;
+    private final PaymentTransactionEventGuard paymentTransactionEventGuard;
     private final PaymentAccountRepository paymentAccountRepository;
     private final PaymentTransactionEventRepository paymentTransactionEventRepository;
     private final Clock clock;
@@ -34,13 +34,13 @@ public class PaymentTransactionEventService {
     }
 
     public void withdraw(TransactionRequest transactionRequest) throws InsufficientFundsException, PaymentAccountNotFoundException {
-        paymentAccountGuard.assertAvailableFunds(transactionRequest);
+        paymentTransactionEventGuard.assertAvailableFunds(transactionRequest);
         var newWithdrawEvent = getWithdrawTransactionEvent(transactionRequest);
         publishIfNeeded(newWithdrawEvent);
     }
 
     public void deposit(TransactionRequest transactionRequest) throws PaymentAccountNotFoundException, FraudDetectedException {
-        paymentAccountGuard.assertCorrespondingWithdraw(transactionRequest);
+        paymentTransactionEventGuard.assertCorrespondingWithdraw(transactionRequest);
         var newDepositEvent = getDepositTransactionEvent(transactionRequest);
         publishIfNeeded(newDepositEvent);
     }

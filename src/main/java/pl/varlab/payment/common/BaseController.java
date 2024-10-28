@@ -20,9 +20,12 @@ public class BaseController {
         return new ErrorResponse(INTERNAL_SERVER_ERROR.name(), INTERNAL_SERVER_ERROR_MESSAGE);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            ValidationException.class,
+    })
     @ResponseStatus(UNPROCESSABLE_ENTITY)
-    public ErrorResponse unprocessableEntity(HttpMessageNotReadableException e) {
+    public ErrorResponse unprocessableEntity(RuntimeException e) {
         var cause = getRootCause(e);
         return new ErrorResponse(UNPROCESSABLE_ENTITY.name(), cause.getMessage());
     }
