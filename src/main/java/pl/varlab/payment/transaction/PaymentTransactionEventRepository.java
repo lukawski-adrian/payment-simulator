@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface PaymentTransactionEventRepository extends JpaRepository<PaymentTransactionEvent, Integer> {
@@ -21,4 +22,6 @@ public interface PaymentTransactionEventRepository extends JpaRepository<Payment
     boolean existsByTransactionIdAndTransactionTypeAndAmount(UUID transactionId, TransactionType transactionType, BigDecimal amount);
 
     Optional<PaymentTransactionEvent> findByTransactionIdAndTransactionType(UUID transactionId, TransactionType transactionType);
+
+    boolean existsByTransactionIdAndTransactionTypeIn(UUID transactionId, Set<TransactionType> transactionTypes);
 }

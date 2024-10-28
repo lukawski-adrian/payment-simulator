@@ -6,6 +6,7 @@ import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.account.PaymentAccountGuard;
 import pl.varlab.payment.account.PaymentAccountNotFoundException;
 import pl.varlab.payment.common.ValidationException;
+import pl.varlab.payment.guard.NonCompliantTransactionException;
 import pl.varlab.payment.transaction.PaymentTransactionEventGuard;
 import pl.varlab.payment.transaction.TransactionRequest;
 
@@ -19,12 +20,13 @@ public final class InitialValidationTransactionHandler extends BaseTransactionHa
     @Override
     public void handle(TransactionRequest transactionRequest) {
         try {
-            // TODO: verify if accounts or transaction is blocked or reported
+            // TODO: verify if account is blocked
+            paymentTransactionEventGuard.assertProcessableTransaction(transactionRequest);
             paymentAccountGuard.assertAccountExists(transactionRequest.senderId());
             paymentAccountGuard.assertAccountExists(transactionRequest.recipientId());
             paymentTransactionEventGuard.assertAvailableFunds(transactionRequest);
             super.handle(transactionRequest);
-        } catch (InsufficientFundsException | PaymentAccountNotFoundException e) {
+        } catch (InsufficientFundsException | PaymentAccountNotFoundException | NonCompliantTransactionException e) {
             throw new ValidationException(e.getMessage());
         }
     }
