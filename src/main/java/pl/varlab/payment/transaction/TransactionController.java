@@ -17,7 +17,7 @@ public class TransactionController extends BaseController {
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     @Bulkhead(name = "transaction-controller")
-    public void newTransaction(@RequestBody TransactionRequest transactionRequest) throws InterruptedException {
+    public void newTransaction(@RequestBody TransactionRequest transactionRequest) {
         transactionService.processTransaction(transactionRequest);
     }
 
