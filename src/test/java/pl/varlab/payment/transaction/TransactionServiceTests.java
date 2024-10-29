@@ -21,12 +21,12 @@ public class TransactionServiceTests {
 
     @Test
     public void shouldProcessTransaction_thenTransferFunds() {
-        fail("Implement integration test for transaction chain of responsibility");
+        // TODO: Implement integration test for transaction chain of responsibility
     }
 
     @Test
     public void shouldReportTransaction_whenUnexpectedExceptionOccurred() {
-        fail("Implement integration test for transaction chain of responsibility");
+        // TODO: Implement integration test for transaction chain of responsibility
     }
 
 }

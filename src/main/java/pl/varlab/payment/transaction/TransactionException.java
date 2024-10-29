@@ -2,7 +2,7 @@ package pl.varlab.payment.transaction;
 
 import lombok.Getter;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 
 @Getter
@@ -11,7 +11,7 @@ public class TransactionException extends Exception {
 
     public TransactionException(TransactionRequest transactionRequest, String message) {
         super(message);
-        this.transactionRequest = checkNotNull(transactionRequest, "transaction request cannot be null");
+        this.transactionRequest = requireNonNull(transactionRequest, "transaction request cannot be null");
     }
 
 }

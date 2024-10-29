@@ -1,22 +1,10 @@
 package pl.varlab.payment.transaction;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import pl.varlab.payment.common.ErrorResponse;
 
-import java.net.URI;
-
-import static com.google.common.collect.Iterables.getOnlyElement;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -24,48 +12,49 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
 
-public class TransactionControllerTests extends BaseSpringContextTest {
-
-    private static final String INTERNAL_SERVER_ERROR = "Internal server error";
-    private static final String EMPTY = "";
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    private static final URI TRANSACTIONS_ENDPOINT = URI.create("/v1/transactions");
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
-    private TransactionService transactionService;
-
-    @BeforeEach
-    void setUp() {
-        reset(transactionService);
-    }
+public class TransactionControllerTests extends BaseTransactionControllerTest {
 
     @Test
-    void shouldReturnAcceptedStatusWhenReceivedPaymentRequest() throws Exception {
-        var transactionRequest = getTransactionRequest();
-        var transactionRequestJsonBody = MAPPER.writeValueAsString(transactionRequest);
-        var transactionRequestCaptor = ArgumentCaptor.forClass(TransactionRequest.class);
+    void shouldReturnAcceptedStatus_whenReceivedTransactionRequest() throws Exception {
+        var userRequest = getTransactionRequest();
+        var transactionRequestJsonBody = MAPPER.writeValueAsString(userRequest);
 
         this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(transactionRequestJsonBody))
-                .andExpect(status().isAccepted())
+                .andExpect(status().isOk())
                 .andExpect(content().string(EMPTY));
 
-        verify(transactionService).processTransaction(transactionRequestCaptor.capture());
+        verify(transactionService).processTransaction(userRequest);
         verifyNoMoreInteractions(transactionService);
-
-        assertEqualsRequests(transactionRequestCaptor, transactionRequest);
     }
 
+    @CsvSource(value = {
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"recipientId\":\"acc2\",\"amount\":10.33}                    |SenderId cannot be empty",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\",\"amount\":10.33}                       |RecipientId cannot be empty",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\",\"recipientId\":\"acc2\"}               |Amount cannot be empty",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\",\"recipientId\":\"acc2\",\"amount\":0}  |Amount must be greater than zero",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\",\"recipientId\":\"acc2\",\"amount\":-1} |Amount must be greater than zero",
+            "{\"senderId\":\"acc1\",\"recipientId\":\"acc2\",\"amount\":10.33}                                                          |TransactionId cannot be empty",
+    }, delimiter = '|')
+    @ParameterizedTest
+    void shouldReturnUnprocessableEntityStatus_whenReceivedMalformedTransactionRequest(String malformedRequestBody, String errorMessage) throws Exception {
+        var expectedResponseBody = getUnprocessableEntityErrorJsonResponse(errorMessage);
+
+        this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(malformedRequestBody))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().json(expectedResponseBody));
+
+        verifyNoInteractions(transactionService);
+    }
+
+
     @Test
-    void shouldReturnInternalServerErrorStatusWhenErrorOccurred() throws Exception {
-        var transactionRequest = getTransactionRequest();
-        var transactionRequestJsonBody = MAPPER.writeValueAsString(transactionRequest);
-        var transactionRequestCaptor = ArgumentCaptor.forClass(TransactionRequest.class);
+    void shouldReturnInternalServerErrorStatus_whenErrorOccurred() throws Exception {
+        var userRequest = getTransactionRequest();
+        var transactionRequestJsonBody = MAPPER.writeValueAsString(userRequest);
 
         doThrow(RuntimeException.class).when(transactionService).processTransaction(any(TransactionRequest.class));
 
@@ -73,24 +62,10 @@ public class TransactionControllerTests extends BaseSpringContextTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(transactionRequestJsonBody))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string(getInternalServerErrorJsonResponse()));
+                .andExpect(content().json(getInternalServerErrorJsonResponse()));
 
-        verify(transactionService).processTransaction(transactionRequestCaptor.capture());
+        verify(transactionService).processTransaction(userRequest);
         verifyNoMoreInteractions(transactionService);
-
-        assertEqualsRequests(transactionRequestCaptor, transactionRequest);
     }
 
-    private String getInternalServerErrorJsonResponse() throws JsonProcessingException {
-        var errorMessage = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.name(), INTERNAL_SERVER_ERROR);
-        return MAPPER.writeValueAsString(errorMessage);
-    }
-
-    private static void assertEqualsRequests(ArgumentCaptor<TransactionRequest> transactionRequestCaptor, TransactionRequest transactionRequest) {
-        var capturedRequest = getOnlyElement(transactionRequestCaptor.getAllValues());
-        assertNotEquals(transactionRequest.transactionId(), capturedRequest.transactionId());
-        assertEquals(transactionRequest.amount(), capturedRequest.amount());
-        assertEquals(transactionRequest.senderId(), capturedRequest.senderId());
-        assertEquals(transactionRequest.recipientId(), capturedRequest.recipientId());
-    }
 }

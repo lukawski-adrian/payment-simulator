@@ -2,6 +2,7 @@ package pl.varlab.payment.transaction.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import pl.varlab.payment.common.ValidationException;
 import pl.varlab.payment.guard.ComplianceGuard;
 import pl.varlab.payment.guard.FraudDetectionGuard;
 import pl.varlab.payment.transaction.TransactionBlocker;
@@ -15,7 +16,7 @@ import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @AllArgsConstructor
-public class GuardTransactionHandler extends BaseTransactionHandler {
+public final class GuardTransactionHandler extends BaseTransactionHandler {
 
     private final FraudDetectionGuard fraudDetectionGuard;
     private final ComplianceGuard complianceGuard;
@@ -31,14 +32,13 @@ public class GuardTransactionHandler extends BaseTransactionHandler {
             var cause = e.getCause();
             if (cause instanceof TransactionException) {
                 transactionBlocker.blockTransaction((TransactionException) cause);
-                return;
+                throw new ValidationException(cause.getMessage());
             }
             throw new RuntimeException("Unexpected execution error during transaction verification", cause);
         }
     }
 
     private void verifyTransaction(TransactionRequest transactionRequest) throws ExecutionException {
-        // TODO: enable virtual threads
         // TODO: consider common transaction guard interface
         var fraudDetectionResult = this.fraudDetectionGuard.assertNotFraud(transactionRequest);
         var complianceResult = this.complianceGuard.assertCompliant(transactionRequest);

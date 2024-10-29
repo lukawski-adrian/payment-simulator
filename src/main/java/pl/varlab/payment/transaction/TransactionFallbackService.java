@@ -11,6 +11,7 @@ public class TransactionFallbackService {
 
     private final PaymentTransactionEventService transactionEventService;
 
+    // TODO: CircuitBreaker
     public void reportTransactionProcessFailure(TransactionRequest transactionRequest, Exception cause) {
         try {
             transactionEventService.reportTransaction(transactionRequest, cause);

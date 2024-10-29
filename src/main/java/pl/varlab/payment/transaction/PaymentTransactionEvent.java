@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.type.descriptor.jdbc.VarcharJdbcType;
 import pl.varlab.payment.account.PaymentAccount;
 
 import java.math.BigDecimal;
@@ -25,7 +27,8 @@ public class PaymentTransactionEvent {
     private Integer id;
 
     @Column(name = "transaction_id", nullable = false, length = 64)
-    private String transactionId;
+    @JdbcType(VarcharJdbcType.class)
+    private UUID transactionId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type", nullable = false, length = 64)
@@ -44,12 +47,5 @@ public class PaymentTransactionEvent {
     @JoinColumn(name = "account_id")
     private PaymentAccount account;
 
-    public PaymentTransactionEvent setTransactionId(UUID transactionId) {
-        if (transactionId == null)
-            return this;
-
-        this.transactionId = transactionId.toString();
-        return this;
-    }
 }
 
