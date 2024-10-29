@@ -2,6 +2,7 @@ package pl.varlab.payment.transaction.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import pl.varlab.payment.common.ValidationException;
 import pl.varlab.payment.guard.ComplianceGuard;
 import pl.varlab.payment.guard.FraudDetectionGuard;
 import pl.varlab.payment.transaction.TransactionBlocker;
@@ -31,7 +32,7 @@ public final class GuardTransactionHandler extends BaseTransactionHandler {
             var cause = e.getCause();
             if (cause instanceof TransactionException) {
                 transactionBlocker.blockTransaction((TransactionException) cause);
-                return;
+                throw new ValidationException(cause.getMessage());
             }
             throw new RuntimeException("Unexpected execution error during transaction verification", cause);
         }
