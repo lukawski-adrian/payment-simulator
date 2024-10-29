@@ -31,7 +31,7 @@ public class TransactionService {
     }
 
     /**
-     * Rethrow {@link ValidationException} because of <a href="https://github.com/resilience4j/resilience4j/issues/1176">bug</a>
+     * Rethrow {@link ValidationException} because of this <a href="https://github.com/resilience4j/resilience4j/issues/1176">behaviour</a>
      * @param validationException
      */
     private void fallback(ValidationException validationException) {
