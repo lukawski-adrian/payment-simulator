@@ -6,22 +6,22 @@ Simple payment simulator application. Simulates money transfer between two accou
 
 ### Payment flow overview
 
-`payment flow` designed according to `chain of responsibility` design pattern. `TransactionRequest` is passed into
+Main `payment flow` designed according to `chain of responsibility` design pattern. `TransactionRequest` is passed into
 chain of independent `TransactionHandler`s.
 
 Assumptions:
 
 - every transaction is traceable via set of `PaymentTransactionEvent`
 - every `TransactionHandler` is responsible for specific isolated part of the `payment flow`
-- every `TransactionHandler` decides if given request will be passed to the next handler or proceeding will be finished at the
+- every `TransactionHandler` decides if the given request will be passed to the next handler or proceeding will be finished at the
   moment
 - every `TransactionHandler` executes idempotent operations (safe in case of re-execution)
-- in case of system failure at any step `payment flow` will be retried 3 times for given request
-- in case of failed recovery after retries as a fallback transaction will be reported (transaction event with type `REPORT` will
+- in case of system failure at any step `payment flow` will be retried 3 times for the given request
+- in case of failed disaster recovery after retries as a fallback transaction will be reported (transaction event with type `REPORT` will
   be stored)
 - `GuardTransactionHandler` verifies in `paralell` arbitrary number of checks (at the moment as an example there are two mocked
   guards: `FraudDetectionGuard` and `ComplianceGuard`)
-- in case of any transaction check fail transaction will be blocked (transaction event with type `BLOCK` will be stored)
+- in case when any of transaction checks fail transaction will be blocked (transaction event with type `BLOCK` will be stored)
 - at the moment application considered as internal service (minimal input data validation)
 
 ### Simplified payment flow overview
@@ -32,7 +32,7 @@ Assumptions:
 
 - money transfer stored as event log:
     - every transaction is traceable
-    - in case of breaking any check transaction is blocked
+    - in case of transaction check failure transaction is blocked
     - in case of system failure transaction is reported
 - designed for failure:
     - bulkhead pattern on the input side
@@ -41,23 +41,24 @@ Assumptions:
 - `payment flow` design:
     - prepared for extension -> `chain of responsibility` design pattern
     - next transaction steps clearly isolated by `pl.varlab.payment.transaction.handler.TransactionHandler` interface
-    - utilizes a few shorter (smaller) instead of single long-running database transactions
+    - utilizes a few shorter (smaller) transactions instead of single long-running database transactions
 - scalable, lightweight, modern:
     - synchronization point between instances has been designed on the database transaction level
-    - `async` and `paralell` transactions processing (separate dedicated thread pool `guard` checks)
+    - `concurrent` transactions processing
+    - `async` and `paralell` transaction verification checks (separate dedicated thread pool `guard` checks)
     - utilizes lightweight `java21 virtual threads`
     - uses modern java lang features like: `Records`, `String Templates`, `Text Blocks`, `Sealed Classes` etc.
-- prepared for observability (spring actuator)
+- prepared for observability (`spring actuator`)
     - basic health status exposed on the `/api/actuator/health` endpoint
     - actual `@Retry` stats available on the `/api/actuator/retries` and `/api/actuator/retryevents` endpoints
     - actual `@Bulkhead` stats available on the `/api/actuator/bulkheads` and `/api/actuator/bulkheadevents` endpoints
 - documented
     - `readme.md` file
-    - `swagger-ui` and `OpenAPI` exposed on `/api/swagger-ui/index.html`
+    - `swagger-ui` and `OpenAPI` exposed on the `/api/swagger-ui/index.html`
 
 ### Prerequisites
 
-If running with embedded `H2` database in memory, `Java21` should be the only one requirement.
+If running with embedded in memory `H2` database, `Java21` should be the only one requirement.
 
 You should be able to run the app via `maven wrapper`:
 
@@ -65,8 +66,10 @@ You should be able to run the app via `maven wrapper`:
 ./mvnw spring-boot:run
 ```
 
+### Running on `PostgreSQL`
+
 Originally designed for `PostgreSQL`. To run with `PostgreSQL` you need to provide working `PostgreSQL` instance
-and set env properties:
+and set `env` variables:
 
 | Environment variable | Description                                    | Example                                   |
 |----------------------|------------------------------------------------|-------------------------------------------
@@ -81,7 +84,7 @@ When the app is running goto `swagger-ui`: http://localhost:8080/api/swagger-ui/
 
 Initial SQL script will create three example accounts with deposit on them.
 
-You can get all the account balances via `/api/v1/accounts` endpoint.
+You can get all the accounts balance via `/api/v1/accounts` endpoint.
 
 Example request:
 ```
