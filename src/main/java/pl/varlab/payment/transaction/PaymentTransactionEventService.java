@@ -51,6 +51,7 @@ public class PaymentTransactionEventService {
     public void deposit(TransactionRequest transactionRequest) throws FraudDetectedException {
         try {
             paymentTransactionEventGuard.assertCorrespondingWithdraw(transactionRequest);
+            paymentTransactionEventGuard.assertConsistentDeposit(transactionRequest);
             var newDepositEvent = getDepositTransactionEvent(transactionRequest);
             publishIfNeeded(newDepositEvent);
         } catch (PaymentAccountNotFoundException e) {
