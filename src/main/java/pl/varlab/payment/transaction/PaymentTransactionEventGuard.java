@@ -49,7 +49,7 @@ public class PaymentTransactionEventGuard {
 
     private void assertConsistentTransaction(TransactionRequest tr, TransactionType transactionType) throws FraudDetectedException {
         var transactionId = tr.transactionId();
-        var amount = tr.amount();
+        var amount = WITHDRAW == transactionType ? tr.amount().negate() : tr.amount();
 
         var inconsistentTransactionExists = paymentTransactionEventRepository.findByTransactionIdAndTransactionType(transactionId, transactionType)
                 .filter(e -> e.getAmount().compareTo(amount) != 0)
