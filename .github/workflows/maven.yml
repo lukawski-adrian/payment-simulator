@@ -1,0 +1,14 @@
+name: Payment simulator
+run-name: Building ${{ github.ref }}
+on: [ push, workflow_dispatch ]
+jobs:
+  maven-build:
+    runs-on: payment-simulator-runner
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.14.0
+        with:
+          java-version: '21'
+          java-distribution: 'temurin'
+      - name: Run Maven build
+        run: mvn clean package
