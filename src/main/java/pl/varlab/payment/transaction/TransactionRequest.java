@@ -17,6 +17,9 @@ public record TransactionRequest(UUID transactionId, String senderId, String rec
         if (!hasLength(recipientId))
             throw new IllegalArgumentException("RecipientId cannot be empty");
 
+        if(senderId.equals(recipientId))
+            throw new IllegalArgumentException("RecipientId and SenderId cannot be the same");
+
         if (amount == null)
             throw new IllegalArgumentException("Amount cannot be empty");
 

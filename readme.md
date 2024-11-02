@@ -13,10 +13,10 @@ Assumptions:
 
 - every transaction is traceable via set of `PaymentTransactionEvent`
 - every `TransactionHandler` is responsible for specific isolated part of the `payment flow`
-- every `TransactionHandler` decides if the given request will be passed to the next handler or proceeding will be finished at the
+- every `TransactionHandler` decides if a given request will be passed to the next handler or proceeding will be finished at the
   moment
 - every `TransactionHandler` executes idempotent operations (safe in case of re-execution)
-- in case of system failure at any step `payment flow` will be retried 3 times for the given request
+- in case of system failure at any step `payment flow` will be retried 3 times for a given request
 - in case of failed disaster recovery after retries as a fallback transaction will be reported (transaction event with type `REPORT` will
   be stored)
 - `GuardTransactionHandler` verifies in `paralell` arbitrary number of checks (at the moment as an example there are two mocked
@@ -45,7 +45,7 @@ Assumptions:
 - scalable, lightweight, modern:
     - synchronization point between instances has been designed on the database transaction level
     - `concurrent` transactions processing
-    - `async` and `paralell` transaction verification checks (separate dedicated thread pool `guard` checks)
+    - `async` and `paralell` transaction verification checks (separate dedicated thread pool for `guard` checks)
     - utilizes lightweight `java21 virtual threads`
     - uses modern java lang features like: `Records`, `String Templates`, `Text Blocks`, `Sealed Classes` etc.
 - prepared for observability (`spring actuator`)
@@ -82,7 +82,7 @@ and set `env` variables:
 
 When the app is running goto `swagger-ui`: http://localhost:8080/api/swagger-ui/index.html and navigate between available endpoints. 
 
-Initial SQL script will create three example accounts with deposit on them.
+Initial SQL script creates three example accounts with deposit on them.
 
 You can get all the accounts balance via `/api/v1/accounts` endpoint.
 
@@ -93,7 +93,7 @@ Host: localhost:8080
 ```
 
 Example response:
-```yaml
+```json
 [
   {
     "name": "ACC1",
@@ -126,9 +126,9 @@ Content-Length: 125
 }
 ```
 
-You will get `200 OK` and empty body if everything goes well.
+You will get `200 OK` and empty body if everything went well.
 
-You can get also `422 Unprocessable Entity` with and error in the response body is something went wrong.
+You can get also `422 Unprocessable Entity` with an error in the response body when something went wrong.
 ```
 {
   "status": "UNPROCESSABLE_ENTITY",
@@ -150,9 +150,7 @@ then it'll be treated as new transaction.
 - authorization
 - docker
 - more unit tests
-- more `@SpringBootTest` tests
-- integration tests with `Testcontainers`
-- account available funds endpoint
+- more integration tests
 - compliance endpoint
-- retry `async` mechanism
+- retry `async` mechanism (fallback queues)
 - event-driven platform integration

@@ -40,15 +40,23 @@ public class PaymentTransactionEventGuard {
     }
 
     public void assertConsistentWithdraw(TransactionRequest tr) throws FraudDetectedException {
+        assertConsistentTransaction(tr, WITHDRAW);
+    }
+
+    public void assertConsistentDeposit(TransactionRequest tr) throws FraudDetectedException {
+        assertConsistentTransaction(tr, DEPOSIT);
+    }
+
+    private void assertConsistentTransaction(TransactionRequest tr, TransactionType transactionType) throws FraudDetectedException {
         var transactionId = tr.transactionId();
         var amount = tr.amount();
 
-        var duplicatedWithdrawExists = paymentTransactionEventRepository.findByTransactionIdAndTransactionType(transactionId, WITHDRAW)
-                .filter(e -> e.getAmount().compareTo(amount.negate()) != 0)
+        var inconsistentTransactionExists = paymentTransactionEventRepository.findByTransactionIdAndTransactionType(transactionId, transactionType)
+                .filter(e -> e.getAmount().compareTo(amount) != 0)
                 .isPresent();
 
-        if (duplicatedWithdrawExists)
-            throw new FraudDetectedException(tr, STR."Inconsistent WITHDRAW transaction found for \{transactionId}");
+        if (inconsistentTransactionExists)
+            throw new FraudDetectedException(tr, STR."Inconsistent \{transactionType} transaction found for \{transactionId}");
     }
 
     public void assertProcessableTransaction(TransactionRequest tr) throws NonCompliantTransactionException {
