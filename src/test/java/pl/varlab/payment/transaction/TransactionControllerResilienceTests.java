@@ -81,7 +81,11 @@ public class TransactionControllerResilienceTests extends BaseTransactionControl
     private Supplier<Integer> transactionRequestSupplier(String userRequest) {
         return () -> {
             try {
-                return this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT).contentType(MediaType.APPLICATION_JSON).content(userRequest)).andReturn().getResponse().getStatus();
+                return this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userRequest))
+                        .andReturn()
+                        .getResponse().getStatus();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
