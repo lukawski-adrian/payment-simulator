@@ -1,8 +1,10 @@
 package pl.varlab.payment.transaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.stubbing.Answer;
 import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
@@ -16,16 +18,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
 
+@Slf4j
 public class TransactionControllerResilienceTests extends BaseTransactionControllerTest {
 
     private static final int MAX_CONCURRENT_CALLS = 2;
     private static final int HTTP_OK_STATUS = 200;
     private static final int HTTP_TOO_MANY_REQUESTS_STATUS = 429;
 
+
     @ParameterizedTest
     @CsvSource({"2,0", "3,1", "2,0"})
-    public void shouldProcessMaxConcurrentRequestsAndReturnTooManyRequestsForRest(int numberOfRequests,
-                                                                                  int expectedBlockedRequests) throws ExecutionException, InterruptedException, TimeoutException, JsonProcessingException {
+    public void shouldProcessMaxConcurrentRequestsAndReturnTooManyRequestsForRest(int numberOfRequests, int expectedBlockedRequests) throws ExecutionException, InterruptedException, TimeoutException, JsonProcessingException {
+
+        doAnswer(transactionProcessingDelay()).when(transactionService).processTransaction(any(TransactionRequest.class));
+
         var userRequest = getTransactionRequest();
         var transactionRequestJsonBody = MAPPER.writeValueAsString(userRequest);
 
@@ -37,8 +43,7 @@ public class TransactionControllerResilienceTests extends BaseTransactionControl
         verifyNoMoreInteractions(transactionService);
     }
 
-    private static void assertResponseStatuses(int expectedNumberOfBlockedRequests,
-                                               List<CompletableFuture<Integer>> responseStatuses) throws InterruptedException, ExecutionException, TimeoutException {
+    private static void assertResponseStatuses(int expectedNumberOfBlockedRequests, List<CompletableFuture<Integer>> responseStatuses) throws InterruptedException, ExecutionException, TimeoutException {
         int countProcessed = 0;
         int countBlocked = 0;
         int countOthers = 0;
@@ -62,14 +67,21 @@ public class TransactionControllerResilienceTests extends BaseTransactionControl
         return requestResults;
     }
 
+    private static Answer<Void> transactionProcessingDelay() {
+        return _ -> {
+            try {
+                Thread.sleep(500);
+                return null;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
     private Supplier<Integer> transactionRequestSupplier(String userRequest) {
         return () -> {
             try {
-                return this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(userRequest))
-                        .andReturn().getResponse()
-                        .getStatus();
+                return this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT).contentType(MediaType.APPLICATION_JSON).content(userRequest)).andReturn().getResponse().getStatus();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
