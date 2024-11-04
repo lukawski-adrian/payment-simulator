@@ -64,7 +64,8 @@ public class PaymentTransactionControllerTests extends BasePaymentTransactionCon
             "{ \"senderAccountNumber\":\"acc1\",\"amount\":10.33}                                       |RecipientAccountNumber cannot be empty",
             "{ \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\"}                    |Amount cannot be empty",
             "{ \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":0}       |Amount must be greater than zero",
-            "{ \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":-1}      |Amount must be greater than zero"
+            "{ \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":-1}      |Amount must be greater than zero",
+            "{ \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\": 10.333} |Max scale is two digits after comma"
     }, delimiter = '|')
     @ParameterizedTest
     void shouldReturnBadRequestStatus_whenReceivedMalformedNewTransactionRequest(String malformedRequestBody, String errorMessage) throws Exception {
@@ -87,6 +88,7 @@ public class PaymentTransactionControllerTests extends BasePaymentTransactionCon
             "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\"}                     |Amount cannot be empty",
             "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":0}        |Amount must be greater than zero",
             "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":-1}       |Amount must be greater than zero",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":10.334}   |Max scale is two digits after comma",
             "{\"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":10.33}                                                                |TransactionId cannot be empty",
     }, delimiter = '|')
     @ParameterizedTest

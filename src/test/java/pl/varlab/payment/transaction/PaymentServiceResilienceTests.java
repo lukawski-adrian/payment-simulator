@@ -88,7 +88,7 @@ public class PaymentServiceResilienceTests extends BaseSpringContextTest {
     public void shouldNotProcessTransactionAndThrowPaymentFlowException() {
         var transactionRequest = getTransactionRequest();
 
-        doThrow(PaymentFlowException.class).doNothing().when(transactionHandler).handle(transactionRequest);
+        doThrow(PaymentFlowException.class).doNothing().when(transactionHandler).handle(any(TransactionRequest.class));
 
         assertThrows(PaymentFlowException.class, () -> paymentService.processTransaction(transactionRequest));
 
@@ -97,5 +97,4 @@ public class PaymentServiceResilienceTests extends BaseSpringContextTest {
         verifyNoMoreInteractions(transactionHandler);
         verifyNoInteractions(fallbackService);
     }
-
 }
