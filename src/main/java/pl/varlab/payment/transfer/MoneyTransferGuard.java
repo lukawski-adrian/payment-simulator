@@ -3,7 +3,7 @@ package pl.varlab.payment.transfer;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import pl.varlab.payment.account.InsufficientFundsException;
-import pl.varlab.payment.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.guard.FraudDetectedException;
 import pl.varlab.payment.transaction.TransactionRequest;
 
 import static java.math.BigDecimal.ZERO;

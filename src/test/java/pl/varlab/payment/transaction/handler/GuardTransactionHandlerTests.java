@@ -3,13 +3,14 @@ package pl.varlab.payment.transaction.handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.varlab.payment.common.ConflictDataException;
-import pl.varlab.payment.guard.ComplianceGuard;
-import pl.varlab.payment.guard.FraudDetectedException;
-import pl.varlab.payment.guard.FraudDetectionGuard;
-import pl.varlab.payment.guard.NonCompliantTransactionException;
-import pl.varlab.payment.transaction.PaymentTransactionService;
 import pl.varlab.payment.transaction.PaymentTransactionBlocker;
+import pl.varlab.payment.transaction.PaymentTransactionService;
+import pl.varlab.payment.transaction.guard.ComplianceGuard;
+import pl.varlab.payment.transaction.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.guard.FraudDetectionGuard;
+import pl.varlab.payment.transaction.guard.NonCompliantTransactionException;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -31,7 +32,8 @@ public class GuardTransactionHandlerTests {
     @BeforeEach
     void setUp() {
         reset(fraudDetectionGuard, complianceGuard, transactionBlocker, nextHandler);
-        guardTransactionHandler = new GuardTransactionHandler(fraudDetectionGuard, complianceGuard, transactionBlocker, paymentTransactionService);
+        var transactionGuards = List.of(complianceGuard, fraudDetectionGuard);
+        guardTransactionHandler = new GuardTransactionHandler(transactionGuards, transactionBlocker, paymentTransactionService);
         guardTransactionHandler.setHandler(nextHandler);
     }
 
@@ -39,13 +41,13 @@ public class GuardTransactionHandlerTests {
     public void shouldPassTransactionToNextHandler() {
         var transactionRequest = getTransactionRequest();
 
-        when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
-        when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
+        when(complianceGuard.assertTransaction(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
+        when(fraudDetectionGuard.assertTransaction(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
 
         guardTransactionHandler.handle(transactionRequest);
 
-        verify(complianceGuard).assertCompliant(transactionRequest);
-        verify(fraudDetectionGuard).assertNotFraud(transactionRequest);
+        verify(complianceGuard).assertTransaction(transactionRequest);
+        verify(fraudDetectionGuard).assertTransaction(transactionRequest);
         verify(nextHandler).handle(transactionRequest);
         verifyNoMoreInteractions(fraudDetectionGuard, complianceGuard, nextHandler);
         verifyNoInteractions(transactionBlocker);
@@ -56,14 +58,14 @@ public class GuardTransactionHandlerTests {
         var transactionRequest = getTransactionRequest();
 
         var fraudException = new FraudDetectedException(transactionRequest, ERR_MSG);
-        when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.failedFuture(fraudException));
-        when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
+        when(complianceGuard.assertTransaction(transactionRequest)).thenReturn(CompletableFuture.failedFuture(fraudException));
+        when(fraudDetectionGuard.assertTransaction(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
 
         assertThrows(ConflictDataException.class, () -> guardTransactionHandler.handle(transactionRequest), ERR_MSG);
 
         verify(transactionBlocker).blockTransaction(fraudException);
-        verify(complianceGuard).assertCompliant(transactionRequest);
-        verify(fraudDetectionGuard).assertNotFraud(transactionRequest);
+        verify(complianceGuard).assertTransaction(transactionRequest);
+        verify(fraudDetectionGuard).assertTransaction(transactionRequest);
         verifyNoMoreInteractions(fraudDetectionGuard, complianceGuard, transactionBlocker);
         verifyNoInteractions(nextHandler);
     }
@@ -73,14 +75,14 @@ public class GuardTransactionHandlerTests {
         var transactionRequest = getTransactionRequest();
 
         var nonCompliantException = new NonCompliantTransactionException(transactionRequest, ERR_MSG);
-        when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
-        when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.failedFuture(nonCompliantException));
+        when(complianceGuard.assertTransaction(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
+        when(fraudDetectionGuard.assertTransaction(transactionRequest)).thenReturn(CompletableFuture.failedFuture(nonCompliantException));
 
         assertThrows(ConflictDataException.class, () -> guardTransactionHandler.handle(transactionRequest), ERR_MSG);
 
         verify(transactionBlocker).blockTransaction(nonCompliantException);
-        verify(complianceGuard).assertCompliant(transactionRequest);
-        verify(fraudDetectionGuard).assertNotFraud(transactionRequest);
+        verify(complianceGuard).assertTransaction(transactionRequest);
+        verify(fraudDetectionGuard).assertTransaction(transactionRequest);
         verifyNoMoreInteractions(fraudDetectionGuard, complianceGuard, transactionBlocker);
         verifyNoInteractions(nextHandler);
     }
@@ -92,7 +94,7 @@ public class GuardTransactionHandlerTests {
         var unexpectedException = new IllegalArgumentException(UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE);
 
         doThrow(unexpectedException)
-                .when(fraudDetectionGuard).assertNotFraud(transactionRequest);
+                .when(fraudDetectionGuard).assertTransaction(transactionRequest);
 
         assertThrows(IllegalArgumentException.class,
                 () -> guardTransactionHandler.handle(transactionRequest),
@@ -108,9 +110,9 @@ public class GuardTransactionHandlerTests {
         var unexpectedException = new IllegalArgumentException(UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE);
         var executionException = new ExecutionException(unexpectedException);
 
-        when(fraudDetectionGuard.assertNotFraud(transactionRequest))
+        when(fraudDetectionGuard.assertTransaction(transactionRequest))
                 .thenReturn(CompletableFuture.completedFuture(null));
-        when(complianceGuard.assertCompliant(transactionRequest))
+        when(complianceGuard.assertTransaction(transactionRequest))
                 .thenReturn(CompletableFuture.failedFuture(executionException));
 
 

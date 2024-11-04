@@ -4,14 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import pl.varlab.payment.account.PaymentAccountNotFoundException;
 import pl.varlab.payment.common.ConflictDataException;
-import pl.varlab.payment.guard.ComplianceGuard;
-import pl.varlab.payment.guard.FraudDetectedException;
-import pl.varlab.payment.guard.FraudDetectionGuard;
-import pl.varlab.payment.transaction.PaymentTransactionService;
 import pl.varlab.payment.transaction.PaymentTransactionBlocker;
 import pl.varlab.payment.transaction.PaymentTransactionException;
+import pl.varlab.payment.transaction.PaymentTransactionService;
 import pl.varlab.payment.transaction.TransactionRequest;
+import pl.varlab.payment.transaction.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.guard.TransactionGuard;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -21,8 +21,7 @@ import java.util.concurrent.TimeoutException;
 @AllArgsConstructor
 public final class GuardTransactionHandler extends BaseTransactionHandler {
 
-    private final FraudDetectionGuard fraudDetectionGuard;
-    private final ComplianceGuard complianceGuard;
+    private final List<TransactionGuard> transactionGuards;
     private final PaymentTransactionBlocker transactionBlocker;
     private final PaymentTransactionService paymentTransactionService;
 
@@ -48,12 +47,12 @@ public final class GuardTransactionHandler extends BaseTransactionHandler {
     }
 
     private void verifyTransaction(TransactionRequest transactionRequest) throws ExecutionException {
-        // TODO: consider common transaction guard interface
-        var fraudDetectionResult = this.fraudDetectionGuard.assertNotFraud(transactionRequest);
-        var complianceResult = this.complianceGuard.assertCompliant(transactionRequest);
+        var verificationResults = transactionGuards.stream()
+                .map(g -> g.assertTransaction(transactionRequest))
+                .toArray(CompletableFuture[]::new);
 
         try {
-            CompletableFuture.allOf(fraudDetectionResult, complianceResult).get(5, TimeUnit.SECONDS);
+            CompletableFuture.allOf(verificationResults).get(5, TimeUnit.SECONDS);
         } catch (InterruptedException | TimeoutException e) {
             log.error("Transaction guard interrupted or timeout exceeded", e);
             throw new RuntimeException(e);

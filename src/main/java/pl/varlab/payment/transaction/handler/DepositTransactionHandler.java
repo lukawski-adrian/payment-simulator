@@ -3,7 +3,7 @@ package pl.varlab.payment.transaction.handler;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import pl.varlab.payment.common.ConflictDataException;
-import pl.varlab.payment.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.guard.FraudDetectedException;
 import pl.varlab.payment.transfer.MoneyTransferService;
 import pl.varlab.payment.transaction.PaymentTransactionBlocker;
 import pl.varlab.payment.transaction.TransactionRequest;

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.account.PaymentAccountGuard;
 import pl.varlab.payment.account.PaymentAccountNotFoundException;
-import pl.varlab.payment.guard.NonCompliantTransactionException;
+import pl.varlab.payment.transaction.guard.NonCompliantTransactionException;
 import pl.varlab.payment.transfer.MoneyTransferGuard;
 import pl.varlab.payment.transaction.PaymentTransactionGuard;
 import pl.varlab.payment.transaction.PaymentTransactionService;

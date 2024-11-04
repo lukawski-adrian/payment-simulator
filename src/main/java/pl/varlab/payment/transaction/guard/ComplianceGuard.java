@@ -1,4 +1,4 @@
-package pl.varlab.payment.guard;
+package pl.varlab.payment.transaction.guard;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -10,10 +10,10 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-public class ComplianceGuard {
+public class ComplianceGuard implements TransactionGuard {
 
     @Async(AsyncConfig.TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR)
-    public CompletableFuture<Void> assertCompliant(TransactionRequest transactionRequest) {
+    public CompletableFuture<Void> assertTransaction(TransactionRequest transactionRequest) {
         try {
             // TODO: compliance blocked user case
             log.info("Compliance verification: {}", transactionRequest);

@@ -7,7 +7,7 @@ import pl.varlab.payment.account.PaymentAccountNotFoundException;
 import pl.varlab.payment.common.ConflictDataException;
 import pl.varlab.payment.common.NotFoundException;
 import pl.varlab.payment.common.ValidationException;
-import pl.varlab.payment.guard.NonCompliantTransactionException;
+import pl.varlab.payment.transaction.guard.NonCompliantTransactionException;
 import pl.varlab.payment.transaction.TransactionRequest;
 import pl.varlab.payment.transaction.validation.ValidationService;
 

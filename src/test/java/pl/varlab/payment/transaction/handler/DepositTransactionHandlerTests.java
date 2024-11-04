@@ -3,7 +3,7 @@ package pl.varlab.payment.transaction.handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.varlab.payment.common.ConflictDataException;
-import pl.varlab.payment.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.guard.FraudDetectedException;
 import pl.varlab.payment.transaction.PaymentTransactionBlocker;
 import pl.varlab.payment.transfer.MoneyTransferService;
 

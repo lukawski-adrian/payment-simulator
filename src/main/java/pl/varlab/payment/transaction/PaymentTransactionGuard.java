@@ -2,7 +2,7 @@ package pl.varlab.payment.transaction;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import pl.varlab.payment.guard.NonCompliantTransactionException;
+import pl.varlab.payment.transaction.guard.NonCompliantTransactionException;
 
 import static pl.varlab.payment.transaction.PaymentTransactionType.BLOCKED;
 

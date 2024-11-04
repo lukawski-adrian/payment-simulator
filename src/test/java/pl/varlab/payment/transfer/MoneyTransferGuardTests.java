@@ -2,7 +2,7 @@ package pl.varlab.payment.transfer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.varlab.payment.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.guard.FraudDetectedException;
 
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package pl.varlab.payment.guard;
+package pl.varlab.payment.transaction.guard;
 
 import pl.varlab.payment.transaction.PaymentTransactionException;
 import pl.varlab.payment.transaction.TransactionRequest;
