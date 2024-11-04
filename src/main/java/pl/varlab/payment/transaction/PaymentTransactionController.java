@@ -18,9 +18,10 @@ public class PaymentTransactionController extends BaseController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Bulkhead(name = "transaction-controller")
-    public void newTransaction(@RequestBody NewTransactionRequest newTransactionRequest) {
+    public TransactionResponse newTransaction(@RequestBody NewTransactionRequest newTransactionRequest) {
         var newTransaction = newTransactionRequest.newTransactionId();
         paymentService.processTransaction(newTransaction);
+        return new TransactionResponse(newTransaction.transactionId());
     }
 
 

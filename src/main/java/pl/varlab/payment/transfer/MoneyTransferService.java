@@ -62,7 +62,7 @@ public class MoneyTransferService {
         if (moneyTransferRepository.existsByTransactionIdAndTransferTypeAndAmount(transactionId, transactionType, amount)) {
             log.info("Event already exists skip publishing [{}, {}]", transactionId, transactionType);
         } else {
-            log.info("Publishing transaction event [{}, {}]", transactionId, transactionType);
+            log.info("Publishing money transfer [{}, {}]", transactionId, transactionType);
             moneyTransferRepository.save(newEvent);
         }
     }

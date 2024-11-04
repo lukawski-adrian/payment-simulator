@@ -1,12 +1,17 @@
 package pl.varlab.payment.transaction;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.UnsupportedEncodingException;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -24,11 +29,13 @@ public class PaymentTransactionControllerTests extends BasePaymentTransactionCon
         var transactionRequestJsonBody = MAPPER.writeValueAsString(userRequest);
         var requestCaptor = ArgumentCaptor.forClass(TransactionRequest.class);
 
-        this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
+        var mvcResult = this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(transactionRequestJsonBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string(EMPTY));
+                .andReturn();
+
+        assertResponse(mvcResult);
 
         verify(paymentService).processTransaction(requestCaptor.capture());
         verifyNoMoreInteractions(paymentService);
@@ -133,5 +140,14 @@ public class PaymentTransactionControllerTests extends BasePaymentTransactionCon
         verifyNoMoreInteractions(paymentService);
     }
 
+    private static void assertResponse(MvcResult mvcResult) {
+        try {
+            var contentAsString = mvcResult.getResponse().getContentAsString();
+            var transactionResponse = MAPPER.readValue(contentAsString, TransactionResponse.class);
+            assertNotNull(transactionResponse.transactionId());
+        } catch (UnsupportedEncodingException | JsonProcessingException e) {
+            fail("Unexpected transaction response", e);
+        }
+    }
 
 }
