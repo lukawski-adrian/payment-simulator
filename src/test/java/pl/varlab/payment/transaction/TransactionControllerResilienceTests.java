@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
 
@@ -22,7 +22,7 @@ import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactio
 public class TransactionControllerResilienceTests extends BaseTransactionControllerTest {
 
     private static final int MAX_CONCURRENT_CALLS = 2;
-    private static final int HTTP_OK_STATUS = 200;
+    private static final int HTTP_NO_CONTENT_STATUS = 204;
     private static final int HTTP_TOO_MANY_REQUESTS_STATUS = 429;
 
 
@@ -49,7 +49,7 @@ public class TransactionControllerResilienceTests extends BaseTransactionControl
         int countOthers = 0;
         for (var httpResponseStatus : responseStatuses)
             switch (httpResponseStatus.get(5, TimeUnit.SECONDS)) {
-                case HTTP_OK_STATUS -> countProcessed++;
+                case HTTP_NO_CONTENT_STATUS -> countProcessed++;
                 case HTTP_TOO_MANY_REQUESTS_STATUS -> countBlocked++;
                 default -> countOthers++;
             }
@@ -81,9 +81,9 @@ public class TransactionControllerResilienceTests extends BaseTransactionControl
     private Supplier<Integer> transactionRequestSupplier(String userRequest) {
         return () -> {
             try {
-                return this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(userRequest))
+                return this.mockMvc.perform(put(TRANSACTIONS_ENDPOINT)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(userRequest))
                         .andReturn()
                         .getResponse().getStatus();
             } catch (Exception e) {
