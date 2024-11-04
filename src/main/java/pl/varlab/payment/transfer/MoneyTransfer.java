@@ -1,4 +1,4 @@
-package pl.varlab.payment.transaction;
+package pl.varlab.payment.transfer;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.type.descriptor.jdbc.VarcharJdbcType;
 import pl.varlab.payment.account.PaymentAccount;
+import pl.varlab.payment.transaction.TransferType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,9 +19,9 @@ import java.util.UUID;
 @Setter
 @Getter
 @Accessors(chain = true)
-@Table(name = "payment_transaction_events")
+@Table(name = "money_transfers")
 @Entity
-public class PaymentTransactionEvent {
+public class MoneyTransfer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,8 +32,8 @@ public class PaymentTransactionEvent {
     private UUID transactionId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "transaction_type", nullable = false, length = 64)
-    private TransactionType transactionType;
+    @Column(name = "transfer_type", nullable = false, length = 64)
+    private TransferType transferType;
 
     @Column(nullable = false)
     private BigDecimal amount;

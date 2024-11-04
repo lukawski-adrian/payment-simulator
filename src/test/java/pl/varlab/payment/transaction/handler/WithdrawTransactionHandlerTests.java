@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.varlab.payment.common.ValidationException;
 import pl.varlab.payment.guard.FraudDetectedException;
-import pl.varlab.payment.transaction.PaymentTransactionEventService;
+import pl.varlab.payment.transfer.MoneyTransferService;
 import pl.varlab.payment.transaction.TransactionBlocker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,7 +16,7 @@ public class WithdrawTransactionHandlerTests {
 
     private static final String UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE = "Unexpected handler exception";
     private static final String FRAUD_ERROR_MESSAGE = "fraud error message";
-    private final PaymentTransactionEventService transactionEventService = mock(PaymentTransactionEventService.class);
+    private final MoneyTransferService transactionEventService = mock(MoneyTransferService.class);
     private final TransactionBlocker transactionBlocker = mock(TransactionBlocker.class);
     private final TransactionHandler nextHandler = mock(TransactionHandler.class);
     private WithdrawTransactionHandler withdrawTransactionHandler;

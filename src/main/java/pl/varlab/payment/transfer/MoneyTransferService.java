@@ -1,24 +1,29 @@
-package pl.varlab.payment.transaction;
+package pl.varlab.payment.transfer;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.varlab.payment.Clock;
-import pl.varlab.payment.account.*;
+import pl.varlab.payment.account.InsufficientFundsException;
+import pl.varlab.payment.account.PaymentAccount;
+import pl.varlab.payment.account.PaymentAccountNotFoundException;
+import pl.varlab.payment.account.PaymentAccountRepository;
 import pl.varlab.payment.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.PaymentTransactionService;
+import pl.varlab.payment.transaction.TransactionRequest;
 
-import static pl.varlab.payment.transaction.TransactionType.DEPOSIT;
-import static pl.varlab.payment.transaction.TransactionType.WITHDRAW;
+import static pl.varlab.payment.transaction.TransferType.DEPOSIT;
+import static pl.varlab.payment.transaction.TransferType.WITHDRAW;
 
 @Service
 @Transactional
 @AllArgsConstructor
 @Slf4j
 // TODO: tests
-public class PaymentTransactionEventService {
-    private final PaymentTransactionEventGuard paymentTransactionEventGuard;
-    private final PaymentTransactionEventRepository paymentTransactionEventRepository;
+public class MoneyTransferService {
+    private final MoneyTransferGuard paymentTransactionEventGuard;
+    private final MoneyTransferRepository moneyTransferRepository;
     private final PaymentTransactionService paymentTransactionService;
     private final PaymentAccountRepository paymentAccountRepository;
     private final Clock clock;
@@ -49,36 +54,36 @@ public class PaymentTransactionEventService {
         }
     }
 
-    private void publishIfNeeded(PaymentTransactionEvent newEvent) {
+    private void publishIfNeeded(MoneyTransfer newEvent) {
         var transactionId = newEvent.getTransactionId();
-        var transactionType = newEvent.getTransactionType();
+        var transactionType = newEvent.getTransferType();
         var amount = newEvent.getAmount();
 
-        if (paymentTransactionEventRepository.existsByTransactionIdAndTransactionTypeAndAmount(transactionId, transactionType, amount)) {
+        if (moneyTransferRepository.existsByTransactionIdAndTransactionTypeAndAmount(transactionId, transactionType, amount)) {
             log.info("Event already exists skip publishing [{}, {}]", transactionId, transactionType);
         } else {
             log.info("Publishing transaction event [{}, {}]", transactionId, transactionType);
-            paymentTransactionEventRepository.save(newEvent);
+            moneyTransferRepository.save(newEvent);
         }
     }
 
 
-    private PaymentTransactionEvent getWithdrawTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
+    private MoneyTransfer getWithdrawTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
         var sender = getPaymentAccount(tr.senderId());
 
-        return new PaymentTransactionEvent()
-                .setTransactionType(WITHDRAW)
+        return new MoneyTransfer()
+                .setTransferType(WITHDRAW)
                 .setTransactionId(tr.transactionId())
                 .setAmount(tr.amount().negate())
                 .setAccount(sender)
                 .setCreatedOn(clock.now());
     }
 
-    private PaymentTransactionEvent getDepositTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
+    private MoneyTransfer getDepositTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
         var recipient = getPaymentAccount(tr.recipientId());
 
-        return new PaymentTransactionEvent()
-                .setTransactionType(DEPOSIT)
+        return new MoneyTransfer()
+                .setTransferType(DEPOSIT)
                 .setTransactionId(tr.transactionId())
                 .setAccount(recipient)
                 .setAmount(tr.amount())

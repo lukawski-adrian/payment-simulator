@@ -8,7 +8,7 @@ import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.account.PaymentAccountGuard;
 import pl.varlab.payment.account.PaymentAccountNotFoundException;
 import pl.varlab.payment.guard.NonCompliantTransactionException;
-import pl.varlab.payment.transaction.PaymentTransactionEventGuard;
+import pl.varlab.payment.transfer.MoneyTransferGuard;
 import pl.varlab.payment.transaction.PaymentTransactionGuard;
 import pl.varlab.payment.transaction.PaymentTransactionService;
 import pl.varlab.payment.transaction.TransactionRequest;
@@ -18,7 +18,7 @@ import pl.varlab.payment.transaction.TransactionRequest;
 public class ValidationService {
     private final PaymentTransactionGuard paymentTransactionGuard;
     private final PaymentTransactionService paymentTransactionService;
-    private final PaymentTransactionEventGuard paymentTransactionEventGuard;
+    private final MoneyTransferGuard paymentTransactionEventGuard;
     private final PaymentAccountGuard paymentAccountGuard;
 
     // TODO: tests

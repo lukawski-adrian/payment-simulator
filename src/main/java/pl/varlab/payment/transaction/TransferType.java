@@ -1,8 +1,6 @@
 package pl.varlab.payment.transaction;
 
-public enum TransactionType {
+public enum TransferType {
     WITHDRAW,
     DEPOSIT,
-    REPORT,
-    BLOCK
 }

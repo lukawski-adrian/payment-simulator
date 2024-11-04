@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import pl.varlab.payment.common.ConflictDataException;
 import pl.varlab.payment.guard.FraudDetectedException;
-import pl.varlab.payment.transaction.PaymentTransactionEventService;
+import pl.varlab.payment.transfer.MoneyTransferService;
 import pl.varlab.payment.transaction.TransactionBlocker;
 import pl.varlab.payment.transaction.TransactionRequest;
 
@@ -12,7 +12,7 @@ import pl.varlab.payment.transaction.TransactionRequest;
 @AllArgsConstructor
 public final class WithdrawTransactionHandler extends BaseTransactionHandler {
 
-    private final PaymentTransactionEventService transactionEventService;
+    private final MoneyTransferService transactionEventService;
     private final TransactionBlocker transactionBlocker;
 
     @Override

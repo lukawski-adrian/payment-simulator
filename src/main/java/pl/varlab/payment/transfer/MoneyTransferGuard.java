@@ -1,25 +1,26 @@
-package pl.varlab.payment.transaction;
+package pl.varlab.payment.transfer;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.TransactionRequest;
+import pl.varlab.payment.transaction.TransferType;
 
 import static java.math.BigDecimal.ZERO;
-import static pl.varlab.payment.transaction.TransactionType.DEPOSIT;
-import static pl.varlab.payment.transaction.TransactionType.WITHDRAW;
+import static pl.varlab.payment.transaction.TransferType.DEPOSIT;
+import static pl.varlab.payment.transaction.TransferType.WITHDRAW;
 
 @Component
 @AllArgsConstructor
-// MoneyTransferGuard
-public class PaymentTransactionEventGuard {
-    private final PaymentTransactionEventRepository paymentTransactionEventRepository;
+public class MoneyTransferGuard {
+    private final MoneyTransferRepository moneyTransferRepository;
 
     public void assertAvailableFunds(TransactionRequest tr) throws InsufficientFundsException {
         var senderId = tr.senderId();
         var amount = tr.amount();
 
-        if (paymentTransactionEventRepository.getAvailableFunds(senderId)
+        if (moneyTransferRepository.getAvailableFunds(senderId)
                 .filter(funds -> ZERO.compareTo(funds.subtract(amount)) <= 0)
                 .isPresent())
             return;
@@ -31,7 +32,7 @@ public class PaymentTransactionEventGuard {
         var transactionId = tr.transactionId();
         var amount = tr.amount();
 
-        if (paymentTransactionEventRepository.existsByTransactionIdAndTransactionTypeAndAmount(transactionId, WITHDRAW, amount.negate()))
+        if (moneyTransferRepository.existsByTransactionIdAndTransactionTypeAndAmount(transactionId, WITHDRAW, amount.negate()))
             return;
 
         throw new FraudDetectedException(tr, STR."No corresponding WITHDRAW transaction found for \{transactionId}");
@@ -45,16 +46,16 @@ public class PaymentTransactionEventGuard {
         assertConsistentTransaction(tr, DEPOSIT);
     }
 
-    private void assertConsistentTransaction(TransactionRequest tr, TransactionType transactionType) throws FraudDetectedException {
+    private void assertConsistentTransaction(TransactionRequest tr, TransferType transferType) throws FraudDetectedException {
         var transactionId = tr.transactionId();
-        var amount = WITHDRAW == transactionType ? tr.amount().negate() : tr.amount();
+        var amount = WITHDRAW == transferType ? tr.amount().negate() : tr.amount();
 
-        var inconsistentTransactionExists = paymentTransactionEventRepository.findByTransactionIdAndTransactionType(transactionId, transactionType)
+        var inconsistentTransactionExists = moneyTransferRepository.findByTransactionIdAndTransactionType(transactionId, transferType)
                 .filter(e -> e.getAmount().compareTo(amount) != 0)
                 .isPresent();
 
         if (inconsistentTransactionExists)
-            throw new FraudDetectedException(tr, STR."Inconsistent \{transactionType} transaction found for \{transactionId}");
+            throw new FraudDetectedException(tr, STR."Inconsistent \{transferType} transaction found for \{transactionId}");
     }
 
 

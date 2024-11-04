@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.varlab.payment.guard.ComplianceGuard;
 import pl.varlab.payment.guard.FraudDetectionGuard;
-import pl.varlab.payment.transaction.PaymentTransactionEventService;
+import pl.varlab.payment.transfer.MoneyTransferService;
 import pl.varlab.payment.transaction.PaymentTransactionService;
 import pl.varlab.payment.transaction.TransactionBlocker;
 import pl.varlab.payment.transaction.handler.*;
@@ -14,7 +14,7 @@ import pl.varlab.payment.transaction.validation.ValidationService;
 public class RootContextConfig {
 
     @Bean
-    public TransactionHandler transactionHandler(PaymentTransactionEventService transactionEventService,
+    public TransactionHandler transactionHandler(MoneyTransferService transactionEventService,
                                                  PaymentTransactionService paymentTransactionService,
                                                  ValidationService validationService,
                                                  FraudDetectionGuard fraudDetectionGuard,

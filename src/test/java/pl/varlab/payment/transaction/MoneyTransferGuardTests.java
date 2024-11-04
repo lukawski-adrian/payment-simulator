@@ -2,6 +2,9 @@ package pl.varlab.payment.transaction;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.varlab.payment.transfer.MoneyTransfer;
+import pl.varlab.payment.transfer.MoneyTransferGuard;
+import pl.varlab.payment.transfer.MoneyTransferRepository;
 import pl.varlab.payment.guard.FraudDetectedException;
 
 import java.util.Optional;
@@ -11,90 +14,90 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
-import static pl.varlab.payment.transaction.TransactionType.DEPOSIT;
-import static pl.varlab.payment.transaction.TransactionType.WITHDRAW;
+import static pl.varlab.payment.transaction.TransferType.DEPOSIT;
+import static pl.varlab.payment.transaction.TransferType.WITHDRAW;
 
-public class PaymentTransactionEventGuardTests {
+public class MoneyTransferGuardTests {
 
-    private final PaymentTransactionEventRepository paymentTransactionEventRepository = mock(PaymentTransactionEventRepository.class);
-    private PaymentTransactionEventGuard paymentTransactionEventGuard;
+    private final MoneyTransferRepository moneyTransferRepository = mock(MoneyTransferRepository.class);
+    private MoneyTransferGuard paymentTransactionEventGuard;
 
     @BeforeEach
     void setUp() {
-        reset(paymentTransactionEventRepository);
-        this.paymentTransactionEventGuard = new PaymentTransactionEventGuard(paymentTransactionEventRepository);
+        reset(moneyTransferRepository);
+        this.paymentTransactionEventGuard = new MoneyTransferGuard(moneyTransferRepository);
     }
 
     @Test
     public void shouldAssertConsistentWithdrawTransaction_whenConsistentWithdrawExists() throws FraudDetectedException {
         var tr = getTransactionRequest();
-        var paymentEvent = mock(PaymentTransactionEvent.class);
+        var paymentEvent = mock(MoneyTransfer.class);
 
         when(paymentEvent.getAmount()).thenReturn(tr.amount().negate());
 
-        when(paymentTransactionEventRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
+        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
                 .thenReturn(Optional.of(paymentEvent));
 
         paymentTransactionEventGuard.assertConsistentWithdraw(tr);
 
         verify(paymentEvent).getAmount();
-        verify(paymentTransactionEventRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
-        verifyNoMoreInteractions(paymentTransactionEventRepository, paymentEvent);
+        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
+        verifyNoMoreInteractions(moneyTransferRepository, paymentEvent);
     }
 
     @Test
     public void shouldAssertConsistentWithdrawTransaction_whenConsistentWithdrawNotExists() throws FraudDetectedException {
         var tr = getTransactionRequest();
 
-        when(paymentTransactionEventRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
+        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
                 .thenReturn(Optional.empty());
 
         paymentTransactionEventGuard.assertConsistentWithdraw(tr);
 
-        verify(paymentTransactionEventRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
-        verifyNoMoreInteractions(paymentTransactionEventRepository);
+        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
+        verifyNoMoreInteractions(moneyTransferRepository);
     }
 
     @Test
     public void shouldAssertConsistentDepositTransaction_whenConsistentDepositExists() throws FraudDetectedException {
         var tr = getTransactionRequest();
-        var paymentEvent = mock(PaymentTransactionEvent.class);
+        var paymentEvent = mock(MoneyTransfer.class);
 
         when(paymentEvent.getAmount()).thenReturn(tr.amount());
 
-        when(paymentTransactionEventRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
+        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
                 .thenReturn(Optional.of(paymentEvent));
 
         paymentTransactionEventGuard.assertConsistentDeposit(tr);
 
         verify(paymentEvent).getAmount();
-        verify(paymentTransactionEventRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
-        verifyNoMoreInteractions(paymentTransactionEventRepository, paymentEvent);
+        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
+        verifyNoMoreInteractions(moneyTransferRepository, paymentEvent);
     }
 
     @Test
     public void shouldAssertConsistentDepositTransaction_whenConsistentDepositNotExists() throws FraudDetectedException {
         var tr = getTransactionRequest();
 
-        when(paymentTransactionEventRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
+        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
                 .thenReturn(Optional.empty());
 
         paymentTransactionEventGuard.assertConsistentDeposit(tr);
 
-        verify(paymentTransactionEventRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
-        verifyNoMoreInteractions(paymentTransactionEventRepository);
+        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
+        verifyNoMoreInteractions(moneyTransferRepository);
     }
 
     @Test
     public void shouldThrowFraudException_whenInconsistentWithdrawTransactionExists() {
         var tr = getTransactionRequest();
-        var paymentEvent = mock(PaymentTransactionEvent.class);
+        var paymentEvent = mock(MoneyTransfer.class);
 
         var fraudExceptionMessage = STR."Inconsistent WITHDRAW transaction found for \{tr.transactionId()}";
 
         when(paymentEvent.getAmount()).thenReturn(tr.amount().subtract(ONE).negate());
 
-        when(paymentTransactionEventRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
+        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
                 .thenReturn(Optional.of(paymentEvent));
 
         try {
@@ -105,20 +108,20 @@ public class PaymentTransactionEventGuardTests {
         }
 
         verify(paymentEvent).getAmount();
-        verify(paymentTransactionEventRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
-        verifyNoMoreInteractions(paymentTransactionEventRepository, paymentEvent);
+        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
+        verifyNoMoreInteractions(moneyTransferRepository, paymentEvent);
     }
 
     @Test
     public void shouldThrowFraudException_whenInconsistentDepositTransactionExists() {
         var tr = getTransactionRequest();
-        var paymentEvent = mock(PaymentTransactionEvent.class);
+        var paymentEvent = mock(MoneyTransfer.class);
 
         var fraudExceptionMessage = STR."Inconsistent DEPOSIT transaction found for \{tr.transactionId()}";
 
         when(paymentEvent.getAmount()).thenReturn(tr.amount().add(ONE));
 
-        when(paymentTransactionEventRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
+        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
                 .thenReturn(Optional.of(paymentEvent));
 
         try {
@@ -129,8 +132,8 @@ public class PaymentTransactionEventGuardTests {
         }
 
         verify(paymentEvent).getAmount();
-        verify(paymentTransactionEventRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
-        verifyNoMoreInteractions(paymentTransactionEventRepository, paymentEvent);
+        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
+        verifyNoMoreInteractions(moneyTransferRepository, paymentEvent);
     }
 
 

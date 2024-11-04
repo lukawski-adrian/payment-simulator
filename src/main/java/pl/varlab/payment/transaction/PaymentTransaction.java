@@ -43,11 +43,11 @@ public class PaymentTransaction {
     private String comment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
+    @JoinColumn(name = "sender_account_id")
     private PaymentAccount sender;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id")
+    @JoinColumn(name = "recipient_account_id")
     private PaymentAccount recipient;
 }
