@@ -16,6 +16,7 @@ import static pl.varlab.payment.transaction.PaymentTransactionType.*;
 // TODO: tests
 public class PaymentTransactionService {
 
+    private static final String FALLBACK_ACCOUNT = "FALLBACK_ACCOUNT";
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PaymentAccountRepository paymentAccountRepository;
     private final Clock clock;
@@ -38,8 +39,8 @@ public class PaymentTransactionService {
 
     public void emitBlocked(TransactionException transactionException) {
         var tr = transactionException.getTransactionRequest();
-        var sender = paymentAccountRepository.findByName(tr.senderId()).orElse(null);
-        var recipient = paymentAccountRepository.findByName(tr.senderId()).orElse(null);
+        var sender = getPaymentAccountOrFallback(tr.senderId());
+        var recipient = getPaymentAccountOrFallback(tr.recipientId());
 
         emitTransactionEvent(tr, BLOCKED, sender, recipient);
     }
@@ -57,6 +58,7 @@ public class PaymentTransactionService {
                 .setTransactionId(tr.transactionId())
                 .setSender(sender)
                 .setRecipient(recipient)
+                .setAmount(tr.amount())
                 .setCreatedOn(clock.now());
 
         paymentTransactionRepository.save(transactionEvent);
@@ -65,5 +67,11 @@ public class PaymentTransactionService {
     public PaymentAccount getPaymentAccount(String externalAccountId) throws PaymentAccountNotFoundException {
         return paymentAccountRepository.findByName(externalAccountId)
                 .orElseThrow(() -> new PaymentAccountNotFoundException(externalAccountId));
+    }
+
+    public PaymentAccount getPaymentAccountOrFallback(String externalAccountId) {
+        return paymentAccountRepository.findByName(externalAccountId)
+                .or(() -> paymentAccountRepository.findByName(FALLBACK_ACCOUNT))
+                .orElseThrow(() -> new RuntimeException(externalAccountId));
     }
 }
