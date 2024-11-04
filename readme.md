@@ -143,7 +143,7 @@ Example:
 
 You can rerun the same transaction many times via (`PUT /api/v1/transactions`) endpoint but only with the same data.
 ```
-POST /api/v1/transactions HTTP/1.1
+PUT /api/v1/transactions HTTP/1.1
 Host: localhost:8080
 
 {
