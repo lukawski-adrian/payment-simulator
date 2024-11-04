@@ -6,19 +6,17 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static pl.varlab.payment.transaction.TransactionTestCommons.getNewTransactionRequest;
-import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
+import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getNewTransactionRequest;
+import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getTransactionRequest;
 
 
-public class TransactionControllerTests extends BaseTransactionControllerTest {
+public class PaymentTransactionControllerTests extends BasePaymentTransactionControllerTest {
 
     @Test
     void shouldReturnCreatedStatus_whenReceivedNewTransactionRequest() throws Exception {
@@ -32,8 +30,8 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().string(EMPTY));
 
-        verify(transactionService).processTransaction(requestCaptor.capture());
-        verifyNoMoreInteractions(transactionService);
+        verify(paymentService).processTransaction(requestCaptor.capture());
+        verifyNoMoreInteractions(paymentService);
 
         assertTransactionRequest(requestCaptor, userRequest);
     }
@@ -49,8 +47,8 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(EMPTY));
 
-        verify(transactionService).processTransaction(userRequest);
-        verifyNoMoreInteractions(transactionService);
+        verify(paymentService).processTransaction(userRequest);
+        verifyNoMoreInteractions(paymentService);
     }
 
     @CsvSource(value = {
@@ -71,7 +69,7 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().json(expectedResponseBody));
 
-        verifyNoInteractions(transactionService);
+        verifyNoInteractions(paymentService);
     }
 
 
@@ -94,7 +92,7 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().json(expectedResponseBody));
 
-        verifyNoInteractions(transactionService);
+        verifyNoInteractions(paymentService);
     }
 
 
@@ -104,7 +102,7 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
         var transactionRequestJsonBody = MAPPER.writeValueAsString(userRequest);
         var requestCaptor = ArgumentCaptor.forClass(TransactionRequest.class);
 
-        doThrow(RuntimeException.class).when(transactionService).processTransaction(any(TransactionRequest.class));
+        doThrow(RuntimeException.class).when(paymentService).processTransaction(any(TransactionRequest.class));
 
         this.mockMvc.perform(post(TRANSACTIONS_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,8 +110,8 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().json(getInternalServerErrorJsonResponse()));
 
-        verify(transactionService).processTransaction(requestCaptor.capture());
-        verifyNoMoreInteractions(transactionService);
+        verify(paymentService).processTransaction(requestCaptor.capture());
+        verifyNoMoreInteractions(paymentService);
 
         assertTransactionRequest(requestCaptor, userRequest);
     }
@@ -123,7 +121,7 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
         var userRequest = getTransactionRequest();
         var transactionRequestJsonBody = MAPPER.writeValueAsString(userRequest);
 
-        doThrow(RuntimeException.class).when(transactionService).processTransaction(userRequest);
+        doThrow(RuntimeException.class).when(paymentService).processTransaction(userRequest);
 
         this.mockMvc.perform(put(TRANSACTIONS_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -131,8 +129,8 @@ public class TransactionControllerTests extends BaseTransactionControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().json(getInternalServerErrorJsonResponse()));
 
-        verify(transactionService).processTransaction(userRequest);
-        verifyNoMoreInteractions(transactionService);
+        verify(paymentService).processTransaction(userRequest);
+        verifyNoMoreInteractions(paymentService);
     }
 
 

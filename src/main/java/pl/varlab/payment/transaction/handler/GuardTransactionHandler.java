@@ -8,8 +8,8 @@ import pl.varlab.payment.guard.ComplianceGuard;
 import pl.varlab.payment.guard.FraudDetectedException;
 import pl.varlab.payment.guard.FraudDetectionGuard;
 import pl.varlab.payment.transaction.PaymentTransactionService;
-import pl.varlab.payment.transaction.TransactionBlocker;
-import pl.varlab.payment.transaction.TransactionException;
+import pl.varlab.payment.transaction.PaymentTransactionBlocker;
+import pl.varlab.payment.transaction.PaymentTransactionException;
 import pl.varlab.payment.transaction.TransactionRequest;
 
 import java.util.concurrent.CompletableFuture;
@@ -23,7 +23,7 @@ public final class GuardTransactionHandler extends BaseTransactionHandler {
 
     private final FraudDetectionGuard fraudDetectionGuard;
     private final ComplianceGuard complianceGuard;
-    private final TransactionBlocker transactionBlocker;
+    private final PaymentTransactionBlocker transactionBlocker;
     private final PaymentTransactionService paymentTransactionService;
 
 
@@ -35,8 +35,8 @@ public final class GuardTransactionHandler extends BaseTransactionHandler {
             super.handle(transactionRequest);
         } catch (ExecutionException e) {
             var cause = e.getCause();
-            if (cause instanceof TransactionException) {
-                transactionBlocker.blockTransaction((TransactionException) cause);
+            if (cause instanceof PaymentTransactionException) {
+                transactionBlocker.blockTransaction((PaymentTransactionException) cause);
                 throw new ConflictDataException(cause.getMessage());
             }
             throw new RuntimeException("Unexpected execution error during transaction verification", cause);

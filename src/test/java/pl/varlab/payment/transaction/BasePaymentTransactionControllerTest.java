@@ -8,6 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import pl.varlab.payment.BaseSpringContextTest;
+import pl.varlab.payment.PaymentService;
 import pl.varlab.payment.common.ErrorResponse;
 
 import java.net.URI;
@@ -19,7 +20,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @SpringJUnitConfig
-class BaseTransactionControllerTest extends BaseSpringContextTest {
+class BasePaymentTransactionControllerTest extends BaseSpringContextTest {
 
     static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error";
     static final URI TRANSACTIONS_ENDPOINT = URI.create("/v1/transactions");
@@ -28,11 +29,11 @@ class BaseTransactionControllerTest extends BaseSpringContextTest {
     MockMvc mockMvc;
 
     @MockBean
-    TransactionService transactionService;
+    PaymentService paymentService;
 
     @BeforeEach
     void setUp() {
-        reset(transactionService);
+        reset(paymentService);
     }
 
     static String getInternalServerErrorJsonResponse() throws JsonProcessingException {

@@ -1,4 +1,4 @@
-package pl.varlab.payment.transaction;
+package pl.varlab.payment.transfer;
 
 public enum TransferType {
     WITHDRAW,

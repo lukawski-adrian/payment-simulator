@@ -1,17 +1,18 @@
-package pl.varlab.payment.transaction;
+package pl.varlab.payment;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.varlab.payment.transaction.PaymentFallbackService;
 import pl.varlab.payment.transaction.handler.TransactionHandler;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
 
-public class TransactionServiceTests {
+public class PaymentServiceTests {
 
     private final TransactionHandler transactionHandler = mock(TransactionHandler.class);
-    private final TransactionFallbackService fallbackService = mock(TransactionFallbackService.class);
+    private final PaymentFallbackService fallbackService = mock(PaymentFallbackService.class);
 
     @BeforeEach
     void setUp() {

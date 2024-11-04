@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @AllArgsConstructor
-public class TransactionFallbackService {
+public class PaymentFallbackService {
 
     // TODO: dead-letter queue
     public void reportTransactionProcessFailure(TransactionRequest transactionRequest, Exception cause) {

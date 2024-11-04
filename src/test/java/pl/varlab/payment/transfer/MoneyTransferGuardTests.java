@@ -1,10 +1,7 @@
-package pl.varlab.payment.transaction;
+package pl.varlab.payment.transfer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.varlab.payment.transfer.MoneyTransfer;
-import pl.varlab.payment.transfer.MoneyTransferGuard;
-import pl.varlab.payment.transfer.MoneyTransferRepository;
 import pl.varlab.payment.guard.FraudDetectedException;
 
 import java.util.Optional;
@@ -13,9 +10,9 @@ import static java.math.BigDecimal.ONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
-import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
-import static pl.varlab.payment.transaction.TransferType.DEPOSIT;
-import static pl.varlab.payment.transaction.TransferType.WITHDRAW;
+import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getTransactionRequest;
+import static pl.varlab.payment.transfer.TransferType.DEPOSIT;
+import static pl.varlab.payment.transfer.TransferType.WITHDRAW;
 
 public class MoneyTransferGuardTests {
 

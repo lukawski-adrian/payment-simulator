@@ -15,11 +15,11 @@ import java.util.function.Supplier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
+import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getTransactionRequest;
 
 
 @Slf4j
-public class TransactionControllerResilienceTests extends BaseTransactionControllerTest {
+public class PaymentTransactionControllerResilienceTests extends BasePaymentTransactionControllerTest {
 
     private static final int MAX_CONCURRENT_CALLS = 2;
     private static final int HTTP_NO_CONTENT_STATUS = 204;
@@ -30,7 +30,7 @@ public class TransactionControllerResilienceTests extends BaseTransactionControl
     @CsvSource({"2,0", "3,1", "2,0"})
     public void shouldProcessMaxConcurrentRequestsAndReturnTooManyRequestsForRest(int numberOfRequests, int expectedBlockedRequests) throws ExecutionException, InterruptedException, TimeoutException, JsonProcessingException {
 
-        doAnswer(transactionProcessingDelay()).when(transactionService).processTransaction(any(TransactionRequest.class));
+        doAnswer(transactionProcessingDelay()).when(paymentService).processTransaction(any(TransactionRequest.class));
 
         var userRequest = getTransactionRequest();
         var transactionRequestJsonBody = MAPPER.writeValueAsString(userRequest);
@@ -39,8 +39,8 @@ public class TransactionControllerResilienceTests extends BaseTransactionControl
 
         assertResponseStatuses(expectedBlockedRequests, responseStatuses);
 
-        verify(transactionService, times(MAX_CONCURRENT_CALLS)).processTransaction(userRequest);
-        verifyNoMoreInteractions(transactionService);
+        verify(paymentService, times(MAX_CONCURRENT_CALLS)).processTransaction(userRequest);
+        verifyNoMoreInteractions(paymentService);
     }
 
     private static void assertResponseStatuses(int expectedNumberOfBlockedRequests, List<CompletableFuture<Integer>> responseStatuses) throws InterruptedException, ExecutionException, TimeoutException {

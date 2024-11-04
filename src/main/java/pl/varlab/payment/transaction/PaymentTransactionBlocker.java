@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @AllArgsConstructor
 // TODO: provide mock implementation and tests
-public class TransactionBlocker {
+public class PaymentTransactionBlocker {
 
     private final PaymentTransactionService paymentTransactionService;
 
-    public void blockTransaction(TransactionException te) {
+    public void blockTransaction(PaymentTransactionException te) {
         log.warn("Block suspicious transaction: {}", te.getTransactionRequest());
         log.warn("Transaction exception: {}", te.getMessage());
         paymentTransactionService.emitBlocked(te);

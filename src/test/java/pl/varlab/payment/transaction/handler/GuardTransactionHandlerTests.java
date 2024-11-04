@@ -8,14 +8,14 @@ import pl.varlab.payment.guard.FraudDetectedException;
 import pl.varlab.payment.guard.FraudDetectionGuard;
 import pl.varlab.payment.guard.NonCompliantTransactionException;
 import pl.varlab.payment.transaction.PaymentTransactionService;
-import pl.varlab.payment.transaction.TransactionBlocker;
+import pl.varlab.payment.transaction.PaymentTransactionBlocker;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
+import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getTransactionRequest;
 
 public class GuardTransactionHandlerTests {
 
@@ -23,7 +23,7 @@ public class GuardTransactionHandlerTests {
     private static final String ERR_MSG = "err msg";
     private final ComplianceGuard complianceGuard = mock(ComplianceGuard.class);
     private final FraudDetectionGuard fraudDetectionGuard = mock(FraudDetectionGuard.class);
-    private final TransactionBlocker transactionBlocker = mock(TransactionBlocker.class);
+    private final PaymentTransactionBlocker transactionBlocker = mock(PaymentTransactionBlocker.class);
     private final TransactionHandler nextHandler = mock(TransactionHandler.class);
     private final PaymentTransactionService paymentTransactionService = mock(PaymentTransactionService.class);
     private GuardTransactionHandler guardTransactionHandler;

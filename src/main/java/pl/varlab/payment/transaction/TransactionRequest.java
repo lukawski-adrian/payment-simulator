@@ -27,8 +27,4 @@ public record TransactionRequest(UUID transactionId, String senderId, String rec
             throw new IllegalArgumentException("Amount must be greater than zero");
     }
 
-    public TransactionRequest newTransactionId() {
-        return new TransactionRequest(UUID.randomUUID(), senderId, recipientId, amount);
-    }
-
 }

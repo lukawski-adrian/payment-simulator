@@ -1,19 +1,21 @@
-package pl.varlab.payment.transaction;
+package pl.varlab.payment;
 
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.varlab.payment.common.PaymentFlowException;
+import pl.varlab.payment.transaction.PaymentFallbackService;
+import pl.varlab.payment.transaction.TransactionRequest;
 import pl.varlab.payment.transaction.handler.TransactionHandler;
 
 @Service
 @Slf4j
 @AllArgsConstructor
-public class TransactionService {
+public class PaymentService {
 
     private final TransactionHandler transactionHandler;
-    private final TransactionFallbackService fallbackService;
+    private final PaymentFallbackService fallbackService;
 
     @Retry(name = "transaction-service", fallbackMethod = "fallback")
     public void processTransaction(TransactionRequest transactionRequest) {

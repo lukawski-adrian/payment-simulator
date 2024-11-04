@@ -5,11 +5,10 @@ import org.springframework.stereotype.Component;
 import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.guard.FraudDetectedException;
 import pl.varlab.payment.transaction.TransactionRequest;
-import pl.varlab.payment.transaction.TransferType;
 
 import static java.math.BigDecimal.ZERO;
-import static pl.varlab.payment.transaction.TransferType.DEPOSIT;
-import static pl.varlab.payment.transaction.TransferType.WITHDRAW;
+import static pl.varlab.payment.transfer.TransferType.DEPOSIT;
+import static pl.varlab.payment.transfer.TransferType.WITHDRAW;
 
 @Component
 @AllArgsConstructor

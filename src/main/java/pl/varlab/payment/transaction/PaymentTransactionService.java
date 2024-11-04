@@ -37,7 +37,7 @@ public class PaymentTransactionService {
         emitTransactionEvent(transactionRequest, SETTLED);
     }
 
-    public void emitBlocked(TransactionException transactionException) {
+    public void emitBlocked(PaymentTransactionException transactionException) {
         var tr = transactionException.getTransactionRequest();
         var sender = getPaymentAccountOrFallback(tr.senderId());
         var recipient = getPaymentAccountOrFallback(tr.recipientId());

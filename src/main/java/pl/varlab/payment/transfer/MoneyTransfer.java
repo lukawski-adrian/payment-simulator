@@ -8,7 +8,6 @@ import lombok.experimental.Accessors;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.type.descriptor.jdbc.VarcharJdbcType;
 import pl.varlab.payment.account.PaymentAccount;
-import pl.varlab.payment.transaction.TransferType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

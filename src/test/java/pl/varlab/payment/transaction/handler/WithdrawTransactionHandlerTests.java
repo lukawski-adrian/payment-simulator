@@ -4,19 +4,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.varlab.payment.common.ConflictDataException;
 import pl.varlab.payment.guard.FraudDetectedException;
-import pl.varlab.payment.transaction.TransactionBlocker;
+import pl.varlab.payment.transaction.PaymentTransactionBlocker;
 import pl.varlab.payment.transfer.MoneyTransferService;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
+import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getTransactionRequest;
 
 public class WithdrawTransactionHandlerTests {
 
     private static final String UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE = "Unexpected handler exception";
     private static final String FRAUD_ERROR_MESSAGE = "fraud error message";
     private final MoneyTransferService transactionEventService = mock(MoneyTransferService.class);
-    private final TransactionBlocker transactionBlocker = mock(TransactionBlocker.class);
+    private final PaymentTransactionBlocker transactionBlocker = mock(PaymentTransactionBlocker.class);
     private final TransactionHandler nextHandler = mock(TransactionHandler.class);
     private WithdrawTransactionHandler withdrawTransactionHandler;
 

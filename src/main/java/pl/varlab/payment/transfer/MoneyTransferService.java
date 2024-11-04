@@ -13,8 +13,8 @@ import pl.varlab.payment.guard.FraudDetectedException;
 import pl.varlab.payment.transaction.PaymentTransactionService;
 import pl.varlab.payment.transaction.TransactionRequest;
 
-import static pl.varlab.payment.transaction.TransferType.DEPOSIT;
-import static pl.varlab.payment.transaction.TransferType.WITHDRAW;
+import static pl.varlab.payment.transfer.TransferType.DEPOSIT;
+import static pl.varlab.payment.transfer.TransferType.WITHDRAW;
 
 @Service
 @Transactional

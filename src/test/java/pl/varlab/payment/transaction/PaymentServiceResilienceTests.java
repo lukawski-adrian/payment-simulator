@@ -10,6 +10,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import pl.varlab.payment.BaseSpringContextTest;
+import pl.varlab.payment.PaymentService;
 import pl.varlab.payment.common.PaymentFlowException;
 import pl.varlab.payment.transaction.handler.TransactionHandler;
 
@@ -18,10 +19,10 @@ import java.util.concurrent.Executor;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static pl.varlab.payment.AsyncConfig.TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR;
-import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
+import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getTransactionRequest;
 
 @SpringJUnitConfig
-public class TransactionServiceResilienceTests extends BaseSpringContextTest {
+public class PaymentServiceResilienceTests extends BaseSpringContextTest {
 
     private static final int RETRY_MAX_ATTEMPTS = 3;
 
@@ -44,10 +45,10 @@ public class TransactionServiceResilienceTests extends BaseSpringContextTest {
     private TransactionHandler transactionHandler;
 
     @MockBean
-    private TransactionFallbackService fallbackService;
+    private PaymentFallbackService fallbackService;
 
     @Autowired
-    private TransactionService transactionService;
+    private PaymentService paymentService;
 
     @BeforeEach
     void setUp() {
@@ -61,7 +62,7 @@ public class TransactionServiceResilienceTests extends BaseSpringContextTest {
         var exception = new RuntimeException();
         doThrow(exception).when(transactionHandler).handle(transactionRequest);
 
-        transactionService.processTransaction(transactionRequest);
+        paymentService.processTransaction(transactionRequest);
 
         verify(transactionHandler, times(RETRY_MAX_ATTEMPTS)).handle(transactionRequest);
         verify(fallbackService).reportTransactionProcessFailure(transactionRequest, exception);
@@ -75,7 +76,7 @@ public class TransactionServiceResilienceTests extends BaseSpringContextTest {
 
         doThrow(RuntimeException.class).doNothing().when(transactionHandler).handle(transactionRequest);
 
-        transactionService.processTransaction(transactionRequest);
+        paymentService.processTransaction(transactionRequest);
 
         verify(transactionHandler, times(RETRY_MAX_ATTEMPTS - 1)).handle(transactionRequest);
 
@@ -89,7 +90,7 @@ public class TransactionServiceResilienceTests extends BaseSpringContextTest {
 
         doThrow(PaymentFlowException.class).doNothing().when(transactionHandler).handle(transactionRequest);
 
-        assertThrows(PaymentFlowException.class, () -> transactionService.processTransaction(transactionRequest));
+        assertThrows(PaymentFlowException.class, () -> paymentService.processTransaction(transactionRequest));
 
         verify(transactionHandler).handle(transactionRequest);
 

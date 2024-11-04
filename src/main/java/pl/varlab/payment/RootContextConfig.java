@@ -6,7 +6,7 @@ import pl.varlab.payment.guard.ComplianceGuard;
 import pl.varlab.payment.guard.FraudDetectionGuard;
 import pl.varlab.payment.transfer.MoneyTransferService;
 import pl.varlab.payment.transaction.PaymentTransactionService;
-import pl.varlab.payment.transaction.TransactionBlocker;
+import pl.varlab.payment.transaction.PaymentTransactionBlocker;
 import pl.varlab.payment.transaction.handler.*;
 import pl.varlab.payment.transaction.validation.ValidationService;
 
@@ -19,7 +19,7 @@ public class RootContextConfig {
                                                  ValidationService validationService,
                                                  FraudDetectionGuard fraudDetectionGuard,
                                                  ComplianceGuard complianceGuard,
-                                                 TransactionBlocker transactionBlocker) {
+                                                 PaymentTransactionBlocker transactionBlocker) {
         var validationHandler = new InitialValidationTransactionHandler(validationService);
         var withdrawHandler = new WithdrawTransactionHandler(transactionEventService, transactionBlocker);
         var verificationHandler = new GuardTransactionHandler(fraudDetectionGuard, complianceGuard, transactionBlocker, paymentTransactionService);

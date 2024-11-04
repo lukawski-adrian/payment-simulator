@@ -3,7 +3,7 @@ package pl.varlab.payment.transaction;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public final class TransactionTestCommons {
+public final class PaymentTransactionTestCommons {
 
     public static final UUID TRANSACTION_ID = UUID.fromString("db69dd8e-3aff-4031-b699-0452bb75095f");
     public static final String SENDER_ID = "acc1";
@@ -18,7 +18,7 @@ public final class TransactionTestCommons {
         return new NewTransactionRequest(SENDER_ID, RECIPIENT_ID, AMOUNT);
     }
 
-    private TransactionTestCommons() {
+    private PaymentTransactionTestCommons() {
         // prevent initialization
     }
 }
