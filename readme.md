@@ -95,16 +95,16 @@ Example response:
 ```json
 [
   {
-    "name": "ACC1",
-    "balance": 1000
+    "accountNumber": "ACC3",
+    "balance": 1280
   },
   {
-    "name": "ACC2",
-    "balance": 1100
+    "accountNumber": "ACC1",
+    "balance": 830
   },
   {
-    "name": "ACC3",
-    "balance": 1200
+    "accountNumber": "ACC2",
+    "balance": 970
   }
 ]
 ```
@@ -117,8 +117,8 @@ POST /api/v1/transactions HTTP/1.1
 Host: localhost:8080
 
 {
-  "senderId": "ACC3",
-  "recipientId": "ACC2",
+  "senderAccountNumber": "ACC3",
+  "recipientAccountNumber": "ACC2",
   "amount": 100
 }
 ```
@@ -148,8 +148,8 @@ Host: localhost:8080
 
 {
   "transactionId": "d0fe75f6-7cae-402b-a106-93a58d261c47",
-  "senderId": "ACC3",
-  "recipientId": "ACC2",
+  "senderAccountNumber": "ACC3",
+  "recipientAccountNumber": "ACC2",
   "amount": 100
 }
 ```

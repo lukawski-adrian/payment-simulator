@@ -50,8 +50,8 @@ class BasePaymentTransactionControllerTest extends BaseSpringContextTest {
         List<TransactionRequest> requests = requestCaptor.getAllValues();
         assertEquals(1, requests.size());
         var request = requests.getFirst();
-        assertEquals(userRequest.senderId(), request.senderId());
-        assertEquals(userRequest.recipientId(), request.recipientId());
+        assertEquals(userRequest.senderAccountNumber(), request.senderAccountNumber());
+        assertEquals(userRequest.recipientAccountNumber(), request.recipientAccountNumber());
         assertEquals(userRequest.amount(), request.amount());
     }
 }

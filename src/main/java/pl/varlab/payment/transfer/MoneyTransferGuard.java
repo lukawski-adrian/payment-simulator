@@ -16,10 +16,10 @@ public class MoneyTransferGuard {
     private final MoneyTransferRepository moneyTransferRepository;
 
     public void assertAvailableFunds(TransactionRequest tr) throws InsufficientFundsException {
-        var senderId = tr.senderId();
+        var senderAccountNumber = tr.senderAccountNumber();
         var amount = tr.amount();
 
-        if (moneyTransferRepository.getAvailableFunds(senderId)
+        if (moneyTransferRepository.getAvailableFunds(senderAccountNumber)
                 .filter(funds -> ZERO.compareTo(funds.subtract(amount)) <= 0)
                 .isPresent())
             return;

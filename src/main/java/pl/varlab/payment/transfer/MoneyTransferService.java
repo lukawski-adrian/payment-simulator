@@ -69,7 +69,7 @@ public class MoneyTransferService {
 
 
     private MoneyTransfer getWithdrawTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
-        var sender = getPaymentAccount(tr.senderId());
+        var sender = getPaymentAccount(tr.senderAccountNumber());
 
         return new MoneyTransfer()
                 .setTransferType(WITHDRAW)
@@ -80,7 +80,7 @@ public class MoneyTransferService {
     }
 
     private MoneyTransfer getDepositTransactionEvent(TransactionRequest tr) throws PaymentAccountNotFoundException {
-        var recipient = getPaymentAccount(tr.recipientId());
+        var recipient = getPaymentAccount(tr.recipientAccountNumber());
 
         return new MoneyTransfer()
                 .setTransferType(DEPOSIT)
@@ -90,8 +90,8 @@ public class MoneyTransferService {
                 .setCreatedOn(clock.now());
     }
 
-    public PaymentAccount getPaymentAccount(String externalAccountId) throws PaymentAccountNotFoundException {
-        return paymentAccountRepository.findByName(externalAccountId)
-                .orElseThrow(() -> new PaymentAccountNotFoundException(externalAccountId));
+    public PaymentAccount getPaymentAccount(String accountNumber) throws PaymentAccountNotFoundException {
+        return paymentAccountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new PaymentAccountNotFoundException(accountNumber));
     }
 }

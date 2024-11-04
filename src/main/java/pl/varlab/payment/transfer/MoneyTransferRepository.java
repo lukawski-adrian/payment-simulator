@@ -15,15 +15,15 @@ public interface MoneyTransferRepository extends JpaRepository<MoneyTransfer, In
     @Query("""
                 SELECT SUM(t.amount) FROM MoneyTransfer t
                     JOIN t.account a
-                    WHERE a.name = :accountName
+                    WHERE a.accountNumber = :accountName
                     GROUP BY a.id
             """)
     Optional<BigDecimal> getAvailableFunds(@Param("accountName") String accountName);
 
     @Query("""
-                SELECT new pl.varlab.payment.account.PaymentAccountBalance(a.name, SUM(t.amount)) FROM MoneyTransfer t
+                SELECT new pl.varlab.payment.account.PaymentAccountBalance(a.accountNumber, SUM(t.amount)) FROM MoneyTransfer t
                     JOIN t.account a
-                    GROUP BY a.id, a.name
+                    GROUP BY a.id, a.accountNumber
             """)
     List<PaymentAccountBalance> getAllAccountsBalance();
 

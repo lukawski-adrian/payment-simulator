@@ -23,10 +23,13 @@ public final class InitialValidationTransactionHandler extends BaseTransactionHa
             validationService.validate(transactionRequest);
             super.handle(transactionRequest);
         } catch (InsufficientFundsException e) {
+            log.info("Insufficient funds during transaction validation: {}", e.getMessage());
             throw new ValidationException(e.getMessage());
         } catch (NonCompliantTransactionException e) {
+            log.info("Non compliant transaction during transaction validation: {}", e.getMessage());
             throw new ConflictDataException(e.getMessage());
         } catch (PaymentAccountNotFoundException e) {
+            log.info("Payment account not found during transaction validation: {}", e.getMessage());
             throw new NotFoundException(e.getMessage());
         }
     }

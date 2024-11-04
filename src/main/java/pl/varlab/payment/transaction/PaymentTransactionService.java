@@ -39,15 +39,15 @@ public class PaymentTransactionService {
 
     public void emitBlocked(PaymentTransactionException transactionException) {
         var tr = transactionException.getTransactionRequest();
-        var sender = getPaymentAccountOrFallback(tr.senderId());
-        var recipient = getPaymentAccountOrFallback(tr.recipientId());
+        var sender = getPaymentAccountOrFallback(tr.senderAccountNumber());
+        var recipient = getPaymentAccountOrFallback(tr.recipientAccountNumber());
 
         emitTransactionEvent(tr, BLOCKED, sender, recipient);
     }
 
     private void emitTransactionEvent(TransactionRequest tr, PaymentTransactionType type) throws PaymentAccountNotFoundException {
-        var sender = getPaymentAccount(tr.senderId());
-        var recipient = getPaymentAccount(tr.recipientId());
+        var sender = getPaymentAccount(tr.senderAccountNumber());
+        var recipient = getPaymentAccount(tr.recipientAccountNumber());
 
         emitTransactionEvent(tr, type, sender, recipient);
     }
@@ -64,14 +64,14 @@ public class PaymentTransactionService {
         paymentTransactionRepository.save(transactionEvent);
     }
 
-    public PaymentAccount getPaymentAccount(String externalAccountId) throws PaymentAccountNotFoundException {
-        return paymentAccountRepository.findByName(externalAccountId)
-                .orElseThrow(() -> new PaymentAccountNotFoundException(externalAccountId));
+    public PaymentAccount getPaymentAccount(String accountNumber) throws PaymentAccountNotFoundException {
+        return paymentAccountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new PaymentAccountNotFoundException(accountNumber));
     }
 
-    public PaymentAccount getPaymentAccountOrFallback(String externalAccountId) {
-        return paymentAccountRepository.findByName(externalAccountId)
-                .or(() -> paymentAccountRepository.findByName(FALLBACK_ACCOUNT))
-                .orElseThrow(() -> new RuntimeException(externalAccountId));
+    public PaymentAccount getPaymentAccountOrFallback(String accountNumber) {
+        return paymentAccountRepository.findByAccountNumber(accountNumber)
+                .or(() -> paymentAccountRepository.findByAccountNumber(FALLBACK_ACCOUNT))
+                .orElseThrow(() -> new RuntimeException(accountNumber));
     }
 }

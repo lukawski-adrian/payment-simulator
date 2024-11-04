@@ -26,8 +26,8 @@ public class ValidationService {
     public void validate(TransactionRequest transactionRequest) throws NonCompliantTransactionException, PaymentAccountNotFoundException, InsufficientFundsException {
         // TODO: verify if account is blocked
         paymentTransactionGuard.assertProcessableTransaction(transactionRequest);
-        paymentAccountGuard.assertAccountExists(transactionRequest.senderId());
-        paymentAccountGuard.assertAccountExists(transactionRequest.recipientId());
+        paymentAccountGuard.assertAccountExists(transactionRequest.senderAccountNumber());
+        paymentAccountGuard.assertAccountExists(transactionRequest.recipientAccountNumber());
         paymentTransactionEventGuard.assertAvailableFunds(transactionRequest);
         paymentTransactionService.emitValidated(transactionRequest);
     }

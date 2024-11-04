@@ -59,12 +59,12 @@ public class PaymentTransactionControllerTests extends BasePaymentTransactionCon
     }
 
     @CsvSource(value = {
-            "{ \"recipientId\":\"acc2\",\"amount\":10.33}                        |SenderId cannot be empty",
-            "{ \"senderId\":\"acc1\", \"recipientId\":\"acc1\",\"amount\":10.33} |RecipientId and SenderId cannot be the same",
-            "{ \"senderId\":\"acc1\",\"amount\":10.33}                           |RecipientId cannot be empty",
-            "{ \"senderId\":\"acc1\",\"recipientId\":\"acc2\"}                   |Amount cannot be empty",
-            "{ \"senderId\":\"acc1\",\"recipientId\":\"acc2\",\"amount\":0}      |Amount must be greater than zero",
-            "{ \"senderId\":\"acc1\",\"recipientId\":\"acc2\",\"amount\":-1}     |Amount must be greater than zero"
+            "{ \"recipientAccountNumber\":\"acc2\",\"amount\":10.33}                                    |SenderAccountNumber cannot be empty",
+            "{ \"senderAccountNumber\":\"acc1\", \"recipientAccountNumber\":\"acc1\",\"amount\":10.33}  |RecipientAccountNumber and SenderAccountNumber cannot be the same",
+            "{ \"senderAccountNumber\":\"acc1\",\"amount\":10.33}                                       |RecipientAccountNumber cannot be empty",
+            "{ \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\"}                    |Amount cannot be empty",
+            "{ \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":0}       |Amount must be greater than zero",
+            "{ \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":-1}      |Amount must be greater than zero"
     }, delimiter = '|')
     @ParameterizedTest
     void shouldReturnBadRequestStatus_whenReceivedMalformedNewTransactionRequest(String malformedRequestBody, String errorMessage) throws Exception {
@@ -81,13 +81,13 @@ public class PaymentTransactionControllerTests extends BasePaymentTransactionCon
 
 
     @CsvSource(value = {
-            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"recipientId\":\"acc2\",\"amount\":10.33}                        |SenderId cannot be empty",
-            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\", \"recipientId\":\"acc1\",\"amount\":10.33} |RecipientId and SenderId cannot be the same",
-            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\",\"amount\":10.33}                           |RecipientId cannot be empty",
-            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\",\"recipientId\":\"acc2\"}                   |Amount cannot be empty",
-            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\",\"recipientId\":\"acc2\",\"amount\":0}      |Amount must be greater than zero",
-            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderId\":\"acc1\",\"recipientId\":\"acc2\",\"amount\":-1}     |Amount must be greater than zero",
-            "{\"senderId\":\"acc1\",\"recipientId\":\"acc2\",\"amount\":10.33}                                                              |TransactionId cannot be empty",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"recipientAccountNumber\":\"acc2\",\"amount\":10.33}                                     |SenderAccountNumber cannot be empty",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\", \"recipientAccountNumber\":\"acc1\",\"amount\":10.33}   |RecipientAccountNumber and SenderAccountNumber cannot be the same",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\",\"amount\":10.33}                                        |RecipientAccountNumber cannot be empty",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\"}                     |Amount cannot be empty",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":0}        |Amount must be greater than zero",
+            "{\"transactionId\":\"d8dfcb88-f9b5-4f9d-ba11-7905e9dce4ba\", \"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":-1}       |Amount must be greater than zero",
+            "{\"senderAccountNumber\":\"acc1\",\"recipientAccountNumber\":\"acc2\",\"amount\":10.33}                                                                |TransactionId cannot be empty",
     }, delimiter = '|')
     @ParameterizedTest
     void shouldReturnBadRequestStatus_whenReceivedMalformedTransactionRequest(String malformedRequestBody, String errorMessage) throws Exception {

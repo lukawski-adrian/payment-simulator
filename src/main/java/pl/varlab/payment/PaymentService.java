@@ -38,6 +38,7 @@ public class PaymentService {
      * @param paymentFlowException
      */
     private void fallback(PaymentFlowException paymentFlowException) {
+        log.info("Processing transaction request has been finished");
         throw paymentFlowException;
     }
 
