@@ -4,7 +4,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import pl.varlab.payment.common.ValidationException;
+import pl.varlab.payment.common.PaymentFlowException;
 import pl.varlab.payment.transaction.handler.TransactionHandler;
 
 @Service
@@ -31,11 +31,12 @@ public class TransactionService {
     }
 
     /**
-     * Rethrow {@link ValidationException} because of this <a href="https://github.com/resilience4j/resilience4j/issues/1176">behaviour</a>
-     * @param validationException
+     * Rethrow {@link PaymentFlowException} because of this <a href="https://github.com/resilience4j/resilience4j/issues/1176">behaviour</a>
+     *
+     * @param paymentFlowException
      */
-    private void fallback(ValidationException validationException) {
-        throw validationException;
+    private void fallback(PaymentFlowException paymentFlowException) {
+        throw paymentFlowException;
     }
 
 }

@@ -11,7 +11,7 @@ chain of independent `TransactionHandler`s.
 
 Assumptions:
 
-- every transaction is traceable via set of `PaymentTransactionEvent`
+- every transaction is traceable, replayable and evidentiary via set of `PaymentTransactionEvent`
 - every `TransactionHandler` is responsible for specific isolated part of the `payment flow`
 - every `TransactionHandler` decides if a given request will be passed to the next handler or proceeding will be finished at the
   moment
@@ -31,7 +31,7 @@ Assumptions:
 ### Main aspects:
 
 - money transfer stored as event log:
-    - every transaction is traceable
+    - every transaction is replayable and evidentiary
     - in case of transaction check failure transaction is blocked
     - in case of system failure transaction is reported
 - designed for failure:
@@ -128,7 +128,7 @@ Content-Length: 125
 
 You will get `200 OK` and empty body if everything went well.
 
-You can get also `422 Unprocessable Entity` with an error in the response body when something went wrong.
+You can get also `400 Bad Request, 404 Not Found, 409 Conflict` with an error in the response body when something went wrong.
 ```
 {
   "status": "UNPROCESSABLE_ENTITY",

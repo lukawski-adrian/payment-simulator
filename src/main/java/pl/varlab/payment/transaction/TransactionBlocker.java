@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import pl.varlab.payment.account.PaymentAccountNotFoundException;
+import pl.varlab.payment.common.ConflictDataException;
 
 @Component
 @Slf4j
@@ -18,7 +19,7 @@ public class TransactionBlocker {
             log.info("Block suspicious transaction {}", te.getTransactionRequest().transactionId());
             transactionEventService.blockTransaction(te);
         } catch (PaymentAccountNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new ConflictDataException(e.getMessage());
         }
     }
 }

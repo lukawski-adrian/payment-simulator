@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.account.PaymentAccountGuard;
 import pl.varlab.payment.account.PaymentAccountNotFoundException;
+import pl.varlab.payment.common.ConflictDataException;
+import pl.varlab.payment.common.NotFoundException;
 import pl.varlab.payment.common.ValidationException;
 import pl.varlab.payment.guard.NonCompliantTransactionException;
 import pl.varlab.payment.transaction.PaymentTransactionEventGuard;
@@ -26,8 +28,12 @@ public final class InitialValidationTransactionHandler extends BaseTransactionHa
             paymentAccountGuard.assertAccountExists(transactionRequest.recipientId());
             paymentTransactionEventGuard.assertAvailableFunds(transactionRequest);
             super.handle(transactionRequest);
-        } catch (InsufficientFundsException | PaymentAccountNotFoundException | NonCompliantTransactionException e) {
+        } catch (InsufficientFundsException e) {
             throw new ValidationException(e.getMessage());
+        } catch (NonCompliantTransactionException e) {
+            throw new ConflictDataException(e.getMessage());
+        } catch (PaymentAccountNotFoundException e) {
+            throw new NotFoundException(e.getMessage());
         }
     }
 }

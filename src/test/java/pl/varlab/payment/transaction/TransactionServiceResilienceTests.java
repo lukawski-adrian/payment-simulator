@@ -10,10 +10,12 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import pl.varlab.payment.BaseSpringContextTest;
+import pl.varlab.payment.common.PaymentFlowException;
 import pl.varlab.payment.transaction.handler.TransactionHandler;
 
 import java.util.concurrent.Executor;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static pl.varlab.payment.AsyncConfig.TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR;
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
@@ -76,6 +78,20 @@ public class TransactionServiceResilienceTests extends BaseSpringContextTest {
         transactionService.processTransaction(transactionRequest);
 
         verify(transactionHandler, times(RETRY_MAX_ATTEMPTS - 1)).handle(transactionRequest);
+
+        verifyNoMoreInteractions(transactionHandler);
+        verifyNoInteractions(fallbackService);
+    }
+
+    @Test
+    public void shouldNotProcessTransactionAndThrowPaymentFlowException() {
+        var transactionRequest = getTransactionRequest();
+
+        doThrow(PaymentFlowException.class).doNothing().when(transactionHandler).handle(transactionRequest);
+
+        assertThrows(PaymentFlowException.class, () -> transactionService.processTransaction(transactionRequest));
+
+        verify(transactionHandler).handle(transactionRequest);
 
         verifyNoMoreInteractions(transactionHandler);
         verifyNoInteractions(fallbackService);
