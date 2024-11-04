@@ -15,9 +15,18 @@ public class TransactionController extends BaseController {
     private final TransactionService transactionService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     @Bulkhead(name = "transaction-controller")
-    public void newTransaction(@RequestBody TransactionRequest transactionRequest) {
+    public void newTransaction(@RequestBody NewTransactionRequest newTransactionRequest) {
+        var newTransaction = newTransactionRequest.newTransactionId();
+        transactionService.processTransaction(newTransaction);
+    }
+
+
+    @PutMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Bulkhead(name = "transaction-controller")
+    public void reprocessTransaction(@RequestBody TransactionRequest transactionRequest) {
         transactionService.processTransaction(transactionRequest);
     }
 

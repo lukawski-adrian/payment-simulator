@@ -5,19 +5,16 @@ import java.util.UUID;
 
 import static org.springframework.util.StringUtils.hasLength;
 
-public record TransactionRequest(UUID transactionId, String senderId, String recipientId, BigDecimal amount) {
+public record NewTransactionRequest(String senderId, String recipientId, BigDecimal amount) {
 
-    public TransactionRequest {
-        if (transactionId == null)
-            throw new IllegalArgumentException("TransactionId cannot be empty");
-
+    public NewTransactionRequest {
         if (!hasLength(senderId))
             throw new IllegalArgumentException("SenderId cannot be empty");
 
         if (!hasLength(recipientId))
             throw new IllegalArgumentException("RecipientId cannot be empty");
 
-        if(senderId.equals(recipientId))
+        if (senderId.equals(recipientId))
             throw new IllegalArgumentException("RecipientId and SenderId cannot be the same");
 
         if (amount == null)

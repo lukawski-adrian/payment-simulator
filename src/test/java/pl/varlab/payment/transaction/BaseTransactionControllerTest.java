@@ -12,8 +12,8 @@ import pl.varlab.payment.common.ErrorResponse;
 import java.net.URI;
 
 import static org.mockito.Mockito.reset;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 @SpringJUnitConfig
 class BaseTransactionControllerTest extends BaseSpringContextTest {
@@ -37,8 +37,8 @@ class BaseTransactionControllerTest extends BaseSpringContextTest {
         return MAPPER.writeValueAsString(errorResponse);
     }
 
-    String getUnprocessableEntityErrorJsonResponse(String errorMessage) throws JsonProcessingException {
-        var errorResponse = new ErrorResponse(UNPROCESSABLE_ENTITY.name(), errorMessage);
+    String getBadRequestErrorJsonResponse(String errorMessage) throws JsonProcessingException {
+        var errorResponse = new ErrorResponse(BAD_REQUEST.name(), errorMessage);
         return MAPPER.writeValueAsString(errorResponse);
     }
 }
