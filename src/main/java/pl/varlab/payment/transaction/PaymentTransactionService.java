@@ -42,17 +42,22 @@ public class PaymentTransactionService {
         var sender = getPaymentAccountOrFallback(tr.senderAccountNumber());
         var recipient = getPaymentAccountOrFallback(tr.recipientAccountNumber());
 
-        emitTransactionEvent(tr, BLOCKED, sender, recipient);
+        var transactionEvent = new PaymentTransaction()
+                .setTransactionType(BLOCKED)
+                .setTransactionId(tr.transactionId())
+                .setSender(sender)
+                .setRecipient(recipient)
+                .setAmount(tr.amount())
+                .setComment(transactionException.getMessage())
+                .setCreatedOn(clock.now());
+
+        paymentTransactionRepository.save(transactionEvent);
     }
 
     private void emitTransactionEvent(TransactionRequest tr, PaymentTransactionType type) throws PaymentAccountNotFoundException {
         var sender = getPaymentAccount(tr.senderAccountNumber());
         var recipient = getPaymentAccount(tr.recipientAccountNumber());
 
-        emitTransactionEvent(tr, type, sender, recipient);
-    }
-
-    private void emitTransactionEvent(TransactionRequest tr, PaymentTransactionType type, PaymentAccount sender, PaymentAccount recipient) {
         var transactionEvent = new PaymentTransaction()
                 .setTransactionType(type)
                 .setTransactionId(tr.transactionId())
