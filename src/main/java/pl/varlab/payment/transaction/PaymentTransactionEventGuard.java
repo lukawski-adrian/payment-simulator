@@ -4,17 +4,15 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import pl.varlab.payment.account.InsufficientFundsException;
 import pl.varlab.payment.guard.FraudDetectedException;
-import pl.varlab.payment.guard.NonCompliantTransactionException;
-
-import java.util.Set;
 
 import static java.math.BigDecimal.ZERO;
-import static pl.varlab.payment.transaction.TransactionType.*;
+import static pl.varlab.payment.transaction.TransactionType.DEPOSIT;
+import static pl.varlab.payment.transaction.TransactionType.WITHDRAW;
 
 @Component
 @AllArgsConstructor
+// MoneyTransferGuard
 public class PaymentTransactionEventGuard {
-    private static final Set<TransactionType> BLOCKED_TRANSACTION_TYPES = Set.of(REPORT, BLOCK);
     private final PaymentTransactionEventRepository paymentTransactionEventRepository;
 
     public void assertAvailableFunds(TransactionRequest tr) throws InsufficientFundsException {
@@ -59,8 +57,5 @@ public class PaymentTransactionEventGuard {
             throw new FraudDetectedException(tr, STR."Inconsistent \{transactionType} transaction found for \{transactionId}");
     }
 
-    public void assertProcessableTransaction(TransactionRequest tr) throws NonCompliantTransactionException {
-        if (paymentTransactionEventRepository.existsByTransactionIdAndTransactionTypeIn(tr.transactionId(), BLOCKED_TRANSACTION_TYPES))
-            throw new NonCompliantTransactionException(tr, "Transaction already blocked");
-    }
+
 }

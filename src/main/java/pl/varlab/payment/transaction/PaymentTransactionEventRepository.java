@@ -8,7 +8,6 @@ import pl.varlab.payment.account.PaymentAccountBalance;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 public interface PaymentTransactionEventRepository extends JpaRepository<PaymentTransactionEvent, Integer> {
@@ -32,5 +31,4 @@ public interface PaymentTransactionEventRepository extends JpaRepository<Payment
 
     Optional<PaymentTransactionEvent> findByTransactionIdAndTransactionType(UUID transactionId, TransactionType transactionType);
 
-    boolean existsByTransactionIdAndTransactionTypeIn(UUID transactionId, Set<TransactionType> transactionTypes);
 }

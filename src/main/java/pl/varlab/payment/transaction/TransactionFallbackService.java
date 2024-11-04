@@ -9,15 +9,9 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class TransactionFallbackService {
 
-    private final PaymentTransactionEventService transactionEventService;
-
-    // TODO: CircuitBreaker
+    // TODO: dead-letter queue
     public void reportTransactionProcessFailure(TransactionRequest transactionRequest, Exception cause) {
-        try {
-            transactionEventService.reportTransaction(transactionRequest, cause);
-        } catch (Exception e) {
-            log.error("Unexpected error when try to report transaction {}", transactionRequest);
-            log.error("Error:", e);
-        }
+        log.error("Unexpected error when try to report transaction {}", transactionRequest);
+        log.error("Error:", cause);
     }
 }

@@ -2,27 +2,27 @@ package pl.varlab.payment;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.varlab.payment.account.PaymentAccountGuard;
 import pl.varlab.payment.guard.ComplianceGuard;
 import pl.varlab.payment.guard.FraudDetectionGuard;
-import pl.varlab.payment.transaction.PaymentTransactionEventGuard;
 import pl.varlab.payment.transaction.PaymentTransactionEventService;
+import pl.varlab.payment.transaction.PaymentTransactionService;
 import pl.varlab.payment.transaction.TransactionBlocker;
 import pl.varlab.payment.transaction.handler.*;
+import pl.varlab.payment.transaction.validation.ValidationService;
 
 @Configuration
 public class RootContextConfig {
 
     @Bean
-    public TransactionHandler transactionHandler(PaymentTransactionEventGuard paymentTransactionEventGuard,
-                                                 PaymentAccountGuard paymentAccountGuard,
-                                                 PaymentTransactionEventService transactionEventService,
+    public TransactionHandler transactionHandler(PaymentTransactionEventService transactionEventService,
+                                                 PaymentTransactionService paymentTransactionService,
+                                                 ValidationService validationService,
                                                  FraudDetectionGuard fraudDetectionGuard,
                                                  ComplianceGuard complianceGuard,
                                                  TransactionBlocker transactionBlocker) {
-        var validationHandler = new InitialValidationTransactionHandler(paymentTransactionEventGuard, paymentAccountGuard);
+        var validationHandler = new InitialValidationTransactionHandler(validationService);
         var withdrawHandler = new WithdrawTransactionHandler(transactionEventService, transactionBlocker);
-        var verificationHandler = new GuardTransactionHandler(fraudDetectionGuard, complianceGuard, transactionBlocker);
+        var verificationHandler = new GuardTransactionHandler(fraudDetectionGuard, complianceGuard, transactionBlocker, paymentTransactionService);
         var depositHandler = new DepositTransactionHandler(transactionEventService, transactionBlocker);
 
         validationHandler.setHandler(withdrawHandler);

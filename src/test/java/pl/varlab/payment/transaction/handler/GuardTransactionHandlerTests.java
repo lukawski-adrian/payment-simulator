@@ -2,18 +2,18 @@ package pl.varlab.payment.transaction.handler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.varlab.payment.common.ValidationException;
+import pl.varlab.payment.common.ConflictDataException;
 import pl.varlab.payment.guard.ComplianceGuard;
 import pl.varlab.payment.guard.FraudDetectedException;
 import pl.varlab.payment.guard.FraudDetectionGuard;
 import pl.varlab.payment.guard.NonCompliantTransactionException;
+import pl.varlab.payment.transaction.PaymentTransactionService;
 import pl.varlab.payment.transaction.TransactionBlocker;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
 
@@ -25,12 +25,13 @@ public class GuardTransactionHandlerTests {
     private final FraudDetectionGuard fraudDetectionGuard = mock(FraudDetectionGuard.class);
     private final TransactionBlocker transactionBlocker = mock(TransactionBlocker.class);
     private final TransactionHandler nextHandler = mock(TransactionHandler.class);
+    private final PaymentTransactionService paymentTransactionService = mock(PaymentTransactionService.class);
     private GuardTransactionHandler guardTransactionHandler;
 
     @BeforeEach
     void setUp() {
         reset(fraudDetectionGuard, complianceGuard, transactionBlocker, nextHandler);
-        guardTransactionHandler = new GuardTransactionHandler(fraudDetectionGuard, complianceGuard, transactionBlocker);
+        guardTransactionHandler = new GuardTransactionHandler(fraudDetectionGuard, complianceGuard, transactionBlocker, paymentTransactionService);
         guardTransactionHandler.setHandler(nextHandler);
     }
 
@@ -58,12 +59,7 @@ public class GuardTransactionHandlerTests {
         when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.failedFuture(fraudException));
         when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
 
-        try {
-            guardTransactionHandler.handle(transactionRequest);
-            fail();
-        } catch (ValidationException e) {
-            assertEquals(ERR_MSG, e.getMessage());
-        }
+        assertThrows(ConflictDataException.class, () -> guardTransactionHandler.handle(transactionRequest), ERR_MSG);
 
         verify(transactionBlocker).blockTransaction(fraudException);
         verify(complianceGuard).assertCompliant(transactionRequest);
@@ -80,11 +76,7 @@ public class GuardTransactionHandlerTests {
         when(complianceGuard.assertCompliant(transactionRequest)).thenReturn(CompletableFuture.completedFuture(null));
         when(fraudDetectionGuard.assertNotFraud(transactionRequest)).thenReturn(CompletableFuture.failedFuture(nonCompliantException));
 
-        try {
-            guardTransactionHandler.handle(transactionRequest);
-        } catch (ValidationException e) {
-            assertEquals(ERR_MSG, e.getMessage());
-        }
+        assertThrows(ConflictDataException.class, () -> guardTransactionHandler.handle(transactionRequest), ERR_MSG);
 
         verify(transactionBlocker).blockTransaction(nonCompliantException);
         verify(complianceGuard).assertCompliant(transactionRequest);
@@ -102,12 +94,9 @@ public class GuardTransactionHandlerTests {
         doThrow(unexpectedException)
                 .when(fraudDetectionGuard).assertNotFraud(transactionRequest);
 
-        try {
-            guardTransactionHandler.handle(transactionRequest);
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals(UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE, e.getMessage());
-        }
+        assertThrows(IllegalArgumentException.class,
+                () -> guardTransactionHandler.handle(transactionRequest),
+                UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE);
 
         verifyNoInteractions(transactionBlocker, nextHandler);
     }
@@ -124,13 +113,10 @@ public class GuardTransactionHandlerTests {
         when(complianceGuard.assertCompliant(transactionRequest))
                 .thenReturn(CompletableFuture.failedFuture(executionException));
 
-        try {
-            guardTransactionHandler.handle(transactionRequest);
-            fail();
-        } catch (RuntimeException e) {
-            assertEquals("Unexpected execution error during transaction verification", e.getMessage());
-            assertEquals(executionException, e.getCause());
-        }
+
+        assertThrows(RuntimeException.class,
+                () -> guardTransactionHandler.handle(transactionRequest),
+                UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE);
 
         verifyNoInteractions(transactionBlocker, nextHandler);
     }
