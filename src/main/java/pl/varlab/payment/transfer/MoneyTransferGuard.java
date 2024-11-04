@@ -32,7 +32,7 @@ public class MoneyTransferGuard {
         var transactionId = tr.transactionId();
         var amount = tr.amount();
 
-        if (moneyTransferRepository.existsByTransactionIdAndTransactionTypeAndAmount(transactionId, WITHDRAW, amount.negate()))
+        if (moneyTransferRepository.existsByTransactionIdAndTransferTypeAndAmount(transactionId, WITHDRAW, amount.negate()))
             return;
 
         throw new FraudDetectedException(tr, STR."No corresponding WITHDRAW transaction found for \{transactionId}");
@@ -50,7 +50,7 @@ public class MoneyTransferGuard {
         var transactionId = tr.transactionId();
         var amount = WITHDRAW == transferType ? tr.amount().negate() : tr.amount();
 
-        var inconsistentTransactionExists = moneyTransferRepository.findByTransactionIdAndTransactionType(transactionId, transferType)
+        var inconsistentTransactionExists = moneyTransferRepository.findByTransactionIdAndTransferType(transactionId, transferType)
                 .filter(e -> e.getAmount().compareTo(amount) != 0)
                 .isPresent();
 

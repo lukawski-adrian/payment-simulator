@@ -28,8 +28,8 @@ public interface MoneyTransferRepository extends JpaRepository<MoneyTransfer, In
             """)
     List<PaymentAccountBalance> getAllAccountsBalance();
 
-    boolean existsByTransactionIdAndTransactionTypeAndAmount(UUID transactionId, TransferType transferType, BigDecimal amount);
+    boolean existsByTransactionIdAndTransferTypeAndAmount(UUID transactionId, TransferType transferType, BigDecimal amount);
 
-    Optional<MoneyTransfer> findByTransactionIdAndTransactionType(UUID transactionId, TransferType transferType);
+    Optional<MoneyTransfer> findByTransactionIdAndTransferType(UUID transactionId, TransferType transferType);
 
 }

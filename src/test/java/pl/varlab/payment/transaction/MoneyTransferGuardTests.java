@@ -35,13 +35,13 @@ public class MoneyTransferGuardTests {
 
         when(paymentEvent.getAmount()).thenReturn(tr.amount().negate());
 
-        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
+        when(moneyTransferRepository.findByTransactionIdAndTransferType(tr.transactionId(), WITHDRAW))
                 .thenReturn(Optional.of(paymentEvent));
 
         paymentTransactionEventGuard.assertConsistentWithdraw(tr);
 
         verify(paymentEvent).getAmount();
-        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
+        verify(moneyTransferRepository).findByTransactionIdAndTransferType(tr.transactionId(), WITHDRAW);
         verifyNoMoreInteractions(moneyTransferRepository, paymentEvent);
     }
 
@@ -49,12 +49,12 @@ public class MoneyTransferGuardTests {
     public void shouldAssertConsistentWithdrawTransaction_whenConsistentWithdrawNotExists() throws FraudDetectedException {
         var tr = getTransactionRequest();
 
-        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
+        when(moneyTransferRepository.findByTransactionIdAndTransferType(tr.transactionId(), WITHDRAW))
                 .thenReturn(Optional.empty());
 
         paymentTransactionEventGuard.assertConsistentWithdraw(tr);
 
-        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
+        verify(moneyTransferRepository).findByTransactionIdAndTransferType(tr.transactionId(), WITHDRAW);
         verifyNoMoreInteractions(moneyTransferRepository);
     }
 
@@ -65,13 +65,13 @@ public class MoneyTransferGuardTests {
 
         when(paymentEvent.getAmount()).thenReturn(tr.amount());
 
-        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
+        when(moneyTransferRepository.findByTransactionIdAndTransferType(tr.transactionId(), DEPOSIT))
                 .thenReturn(Optional.of(paymentEvent));
 
         paymentTransactionEventGuard.assertConsistentDeposit(tr);
 
         verify(paymentEvent).getAmount();
-        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
+        verify(moneyTransferRepository).findByTransactionIdAndTransferType(tr.transactionId(), DEPOSIT);
         verifyNoMoreInteractions(moneyTransferRepository, paymentEvent);
     }
 
@@ -79,12 +79,12 @@ public class MoneyTransferGuardTests {
     public void shouldAssertConsistentDepositTransaction_whenConsistentDepositNotExists() throws FraudDetectedException {
         var tr = getTransactionRequest();
 
-        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
+        when(moneyTransferRepository.findByTransactionIdAndTransferType(tr.transactionId(), DEPOSIT))
                 .thenReturn(Optional.empty());
 
         paymentTransactionEventGuard.assertConsistentDeposit(tr);
 
-        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
+        verify(moneyTransferRepository).findByTransactionIdAndTransferType(tr.transactionId(), DEPOSIT);
         verifyNoMoreInteractions(moneyTransferRepository);
     }
 
@@ -97,7 +97,7 @@ public class MoneyTransferGuardTests {
 
         when(paymentEvent.getAmount()).thenReturn(tr.amount().subtract(ONE).negate());
 
-        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW))
+        when(moneyTransferRepository.findByTransactionIdAndTransferType(tr.transactionId(), WITHDRAW))
                 .thenReturn(Optional.of(paymentEvent));
 
         try {
@@ -108,7 +108,7 @@ public class MoneyTransferGuardTests {
         }
 
         verify(paymentEvent).getAmount();
-        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), WITHDRAW);
+        verify(moneyTransferRepository).findByTransactionIdAndTransferType(tr.transactionId(), WITHDRAW);
         verifyNoMoreInteractions(moneyTransferRepository, paymentEvent);
     }
 
@@ -121,7 +121,7 @@ public class MoneyTransferGuardTests {
 
         when(paymentEvent.getAmount()).thenReturn(tr.amount().add(ONE));
 
-        when(moneyTransferRepository.findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT))
+        when(moneyTransferRepository.findByTransactionIdAndTransferType(tr.transactionId(), DEPOSIT))
                 .thenReturn(Optional.of(paymentEvent));
 
         try {
@@ -132,7 +132,7 @@ public class MoneyTransferGuardTests {
         }
 
         verify(paymentEvent).getAmount();
-        verify(moneyTransferRepository).findByTransactionIdAndTransactionType(tr.transactionId(), DEPOSIT);
+        verify(moneyTransferRepository).findByTransactionIdAndTransferType(tr.transactionId(), DEPOSIT);
         verifyNoMoreInteractions(moneyTransferRepository, paymentEvent);
     }
 

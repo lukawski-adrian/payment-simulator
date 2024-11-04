@@ -59,7 +59,7 @@ public class MoneyTransferService {
         var transactionType = newEvent.getTransferType();
         var amount = newEvent.getAmount();
 
-        if (moneyTransferRepository.existsByTransactionIdAndTransactionTypeAndAmount(transactionId, transactionType, amount)) {
+        if (moneyTransferRepository.existsByTransactionIdAndTransferTypeAndAmount(transactionId, transactionType, amount)) {
             log.info("Event already exists skip publishing [{}, {}]", transactionId, transactionType);
         } else {
             log.info("Publishing transaction event [{}, {}]", transactionId, transactionType);
