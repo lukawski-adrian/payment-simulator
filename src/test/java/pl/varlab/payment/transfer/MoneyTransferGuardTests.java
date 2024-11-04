@@ -7,8 +7,7 @@ import pl.varlab.payment.guard.FraudDetectedException;
 import java.util.Optional;
 
 import static java.math.BigDecimal.ONE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getTransactionRequest;
 import static pl.varlab.payment.transfer.TransferType.DEPOSIT;
@@ -97,12 +96,7 @@ public class MoneyTransferGuardTests {
         when(moneyTransferRepository.findByTransactionIdAndTransferType(tr.transactionId(), WITHDRAW))
                 .thenReturn(Optional.of(paymentEvent));
 
-        try {
-            paymentTransactionEventGuard.assertConsistentWithdraw(tr);
-            fail();
-        } catch (FraudDetectedException e) {
-            assertEquals(fraudExceptionMessage, e.getMessage());
-        }
+        assertThrows(FraudDetectedException.class, () -> paymentTransactionEventGuard.assertConsistentWithdraw(tr), fraudExceptionMessage);
 
         verify(paymentEvent).getAmount();
         verify(moneyTransferRepository).findByTransactionIdAndTransferType(tr.transactionId(), WITHDRAW);
@@ -121,12 +115,7 @@ public class MoneyTransferGuardTests {
         when(moneyTransferRepository.findByTransactionIdAndTransferType(tr.transactionId(), DEPOSIT))
                 .thenReturn(Optional.of(paymentEvent));
 
-        try {
-            paymentTransactionEventGuard.assertConsistentDeposit(tr);
-            fail();
-        } catch (FraudDetectedException e) {
-            assertEquals(fraudExceptionMessage, e.getMessage());
-        }
+        assertThrows(FraudDetectedException.class, () -> paymentTransactionEventGuard.assertConsistentDeposit(tr), fraudExceptionMessage);
 
         verify(paymentEvent).getAmount();
         verify(moneyTransferRepository).findByTransactionIdAndTransferType(tr.transactionId(), DEPOSIT);
