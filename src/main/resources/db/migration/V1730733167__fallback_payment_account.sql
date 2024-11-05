@@ -1,0 +1,1 @@
+INSERT INTO payment_accounts (name) values ('FALLBACK_ACCOUNT');

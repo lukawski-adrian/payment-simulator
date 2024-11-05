@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface PaymentAccountRepository extends JpaRepository<PaymentAccount, Integer> {
 
-    Optional<PaymentAccount> findByName(String accountName);
+    Optional<PaymentAccount> findByAccountNumber(String accountNumber);
 
-    boolean existsByName(String accountName);
+    boolean existsByAccountNumber(String accountNumber);
 }

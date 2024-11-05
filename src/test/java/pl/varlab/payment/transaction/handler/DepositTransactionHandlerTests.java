@@ -2,22 +2,21 @@ package pl.varlab.payment.transaction.handler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.varlab.payment.common.ValidationException;
-import pl.varlab.payment.guard.FraudDetectedException;
-import pl.varlab.payment.transaction.PaymentTransactionEventService;
-import pl.varlab.payment.transaction.TransactionBlocker;
+import pl.varlab.payment.common.ConflictDataException;
+import pl.varlab.payment.transaction.guard.FraudDetectedException;
+import pl.varlab.payment.transaction.PaymentTransactionBlocker;
+import pl.varlab.payment.transfer.MoneyTransferService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static pl.varlab.payment.transaction.TransactionTestCommons.getTransactionRequest;
+import static pl.varlab.payment.transaction.PaymentTransactionTestCommons.getTransactionRequest;
 
 public class DepositTransactionHandlerTests {
 
     private static final String UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE = "Unexpected handler exception";
     private static final String FRAUD_ERROR_MESSAGE = "fraud error message";
-    private final PaymentTransactionEventService transactionEventService = mock(PaymentTransactionEventService.class);
-    private final TransactionBlocker transactionBlocker = mock(TransactionBlocker.class);
+    private final MoneyTransferService transactionEventService = mock(MoneyTransferService.class);
+    private final PaymentTransactionBlocker transactionBlocker = mock(PaymentTransactionBlocker.class);
     private final TransactionHandler nextHandler = mock(TransactionHandler.class);
     private DepositTransactionHandler depositTransactionHandler;
 
@@ -46,12 +45,7 @@ public class DepositTransactionHandlerTests {
 
         doThrow(new IllegalArgumentException(UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE)).when(transactionEventService).deposit(transactionRequest);
 
-        try {
-            depositTransactionHandler.handle(transactionRequest);
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals(UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE, e.getMessage());
-        }
+        assertThrows(IllegalArgumentException.class, () -> depositTransactionHandler.handle(transactionRequest), UNEXPECTED_HANDLER_EXCEPTION_ERROR_MESSAGE);
 
         verify(transactionEventService).deposit(transactionRequest);
         verifyNoMoreInteractions(transactionEventService);
@@ -65,12 +59,7 @@ public class DepositTransactionHandlerTests {
         var fraudException = new FraudDetectedException(transactionRequest, FRAUD_ERROR_MESSAGE);
         doThrow(fraudException).when(transactionEventService).deposit(transactionRequest);
 
-        try {
-            depositTransactionHandler.handle(transactionRequest);
-            fail();
-        } catch (ValidationException e) {
-            assertEquals(FRAUD_ERROR_MESSAGE, e.getMessage());
-        }
+        assertThrows(ConflictDataException.class, () -> depositTransactionHandler.handle(transactionRequest), FRAUD_ERROR_MESSAGE);
 
         verify(transactionEventService).deposit(transactionRequest);
         verify(transactionBlocker).blockTransaction(fraudException);

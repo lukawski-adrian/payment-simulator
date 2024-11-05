@@ -11,17 +11,16 @@ chain of independent `TransactionHandler`s.
 
 Assumptions:
 
-- every transaction is traceable via set of `PaymentTransactionEvent`
+- every transaction is traceable, replayable and evidentiary via set of `PaymentTransactionEvent`
 - every `TransactionHandler` is responsible for specific isolated part of the `payment flow`
 - every `TransactionHandler` decides if a given request will be passed to the next handler or proceeding will be finished at the
   moment
 - every `TransactionHandler` executes idempotent operations (safe in case of re-execution)
 - in case of system failure at any step `payment flow` will be retried 3 times for a given request
-- in case of failed disaster recovery after retries as a fallback transaction will be reported (transaction event with type `REPORT` will
-  be stored)
+- in case of failed disaster recovery after retries as a fallback transaction will be logged (TODO: send to DLQ)
 - `GuardTransactionHandler` verifies in `paralell` arbitrary number of checks (at the moment as an example there are two mocked
   guards: `FraudDetectionGuard` and `ComplianceGuard`)
-- in case when any of transaction checks fail transaction will be blocked (transaction event with type `BLOCK` will be stored)
+- in case when any of transaction checks fail transaction will be blocked (transaction event with type `BLOCKED` will be stored)
 - at the moment application considered as internal service (minimal input data validation)
 
 ### Simplified payment flow overview
@@ -31,7 +30,7 @@ Assumptions:
 ### Main aspects:
 
 - money transfer stored as event log:
-    - every transaction is traceable
+    - every transaction is replayable and evidentiary
     - in case of transaction check failure transaction is blocked
     - in case of system failure transaction is reported
 - designed for failure:
@@ -96,51 +95,66 @@ Example response:
 ```json
 [
   {
-    "name": "ACC1",
-    "balance": 1000
+    "accountNumber": "ACC3",
+    "balance": 1280
   },
   {
-    "name": "ACC2",
-    "balance": 1100
+    "accountNumber": "ACC1",
+    "balance": 830
   },
   {
-    "name": "ACC3",
-    "balance": 1200
+    "accountNumber": "ACC2",
+    "balance": 970
   }
 ]
 ```
 
 After accounts balance verification give a try to `transaction-controller`:
 
-Example request:
+Example request for new transaction:
 ```
 POST /api/v1/transactions HTTP/1.1
 Host: localhost:8080
-Content-Length: 125
 
 {
-  "transactionId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "senderId": "ACC3",
-  "recipientId": "ACC2",
+  "senderAccountNumber": "ACC3",
+  "recipientAccountNumber": "ACC2",
   "amount": 100
 }
 ```
 
-You will get `200 OK` and empty body if everything went well.
-
-You can get also `422 Unprocessable Entity` with an error in the response body when something went wrong.
+You will get `201 CREATED` and `transactionId` in the response body if everything went well.
 ```
 {
-  "status": "UNPROCESSABLE_ENTITY",
+  "transactionId": "92a70c19-b1a4-4f6e-9561-d47b76645d58"
+}
+```
+
+You can get also `400 Bad Request, 404 Not Found, 409 Conflict` with an error in the response body when something went wrong.
+
+Example:
+```
+{
+  "status": "CONFLICT",
   "message": "Fraud detected (divisor 11)"
 }
 ```
 
-You can rerun the same transaction many times but only with the same data.
-If you change e.g. amount it'll be treated as `FraudException` and transaction will be blocked.
 
-If you want push a few more transactions remember to always update `transactionId`!
-then it'll be treated as new transaction.
+You can rerun the same transaction many times via (`PUT /api/v1/transactions`) endpoint but only with the same data.
+```
+PUT /api/v1/transactions HTTP/1.1
+Host: localhost:8080
+
+{
+  "transactionId": "d0fe75f6-7cae-402b-a106-93a58d261c47",
+  "senderAccountNumber": "ACC3",
+  "recipientAccountNumber": "ACC2",
+  "amount": 100
+}
+```
+
+If you change e.g. amount it'll be treated as `FraudException` and transaction will be blocked.
 
 
 ### TODOs:
@@ -152,5 +166,5 @@ then it'll be treated as new transaction.
 - more unit tests
 - more integration tests
 - compliance endpoint
-- retry `async` mechanism (fallback queues)
+- retry `async` mechanism (dlq)
 - event-driven platform integration

@@ -24,10 +24,22 @@ public class BaseController {
             HttpMessageNotReadableException.class,
             ValidationException.class,
     })
-    @ResponseStatus(UNPROCESSABLE_ENTITY)
-    public ErrorResponse unprocessableEntity(RuntimeException e) {
+    @ResponseStatus(BAD_REQUEST)
+    public ErrorResponse badRequest(RuntimeException e) {
         var cause = getRootCause(e);
-        return new ErrorResponse(UNPROCESSABLE_ENTITY.name(), cause.getMessage());
+        return new ErrorResponse(BAD_REQUEST.name(), cause.getMessage());
+    }
+
+    @ExceptionHandler({NotFoundException.class})
+    @ResponseStatus(NOT_FOUND)
+    public ErrorResponse notFound(NotFoundException e) {
+        return new ErrorResponse(NOT_FOUND.name(), e.getMessage());
+    }
+
+    @ExceptionHandler({ConflictDataException.class})
+    @ResponseStatus(CONFLICT)
+    public ErrorResponse conflict(ConflictDataException e) {
+        return new ErrorResponse(CONFLICT.name(), e.getMessage());
     }
 
     @ExceptionHandler(BulkheadFullException.class)

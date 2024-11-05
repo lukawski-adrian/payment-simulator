@@ -9,10 +9,10 @@ public class PaymentAccountGuard {
 
     private final PaymentAccountRepository paymentAccountRepository;
 
-    public void assertAccountExists(String accountName) throws PaymentAccountNotFoundException {
-        if (paymentAccountRepository.existsByName(accountName))
+    public void assertAccountExists(String accountNumber) throws PaymentAccountNotFoundException {
+        if (paymentAccountRepository.existsByAccountNumber(accountNumber))
             return;
 
-        throw new PaymentAccountNotFoundException(accountName);
+        throw new PaymentAccountNotFoundException(accountNumber);
     }
 }

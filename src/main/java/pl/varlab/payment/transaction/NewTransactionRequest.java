@@ -1,22 +1,15 @@
 package pl.varlab.payment.transaction;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.UUID;
 
-import static java.math.RoundingMode.HALF_EVEN;
 import static org.springframework.util.StringUtils.hasLength;
 
-public record TransactionRequest(UUID transactionId, String senderAccountNumber, String recipientAccountNumber,
-                                 BigDecimal amount) {
+public record NewTransactionRequest(String senderAccountNumber, String recipientAccountNumber, BigDecimal amount) {
 
     private static final int MAX_AMOUNT_SCALE = 2;
 
-    public TransactionRequest {
-        if (transactionId == null)
-            throw new IllegalArgumentException("TransactionId cannot be empty");
-
+    public NewTransactionRequest {
         if (!hasLength(senderAccountNumber))
             throw new IllegalArgumentException("SenderAccountNumber cannot be empty");
 
@@ -34,6 +27,10 @@ public record TransactionRequest(UUID transactionId, String senderAccountNumber,
 
         if (amount.scale() > MAX_AMOUNT_SCALE)
             throw new IllegalArgumentException("Max scale is two digits after comma");
+    }
+
+    public TransactionRequest newTransactionId() {
+        return new TransactionRequest(UUID.randomUUID(), senderAccountNumber, recipientAccountNumber, amount);
     }
 
 }

@@ -1,4 +1,4 @@
-package pl.varlab.payment.guard;
+package pl.varlab.payment.transaction.guard;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -11,12 +11,12 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-public class FraudDetectionGuard {
+public class FraudDetectionGuard implements TransactionGuard {
 
     private static final BigDecimal FRAUD_DIVISOR = BigDecimal.valueOf(11);
 
     @Async(AsyncConfig.TRANSACTION_GUARDS_THREAD_POOL_TASK_EXECUTOR)
-    public CompletableFuture<Void> assertNotFraud(TransactionRequest transactionRequest) {
+    public CompletableFuture<Void> assertTransaction(TransactionRequest transactionRequest) {
         try {
             log.info("Fraud detection verification: {}", transactionRequest);
             Thread.sleep(500);

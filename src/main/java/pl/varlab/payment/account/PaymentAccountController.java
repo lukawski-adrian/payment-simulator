@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import pl.varlab.payment.common.BaseController;
-import pl.varlab.payment.transaction.PaymentTransactionEventRepository;
+import pl.varlab.payment.transfer.MoneyTransferRepository;
 
 import java.util.List;
 
@@ -16,11 +16,11 @@ import java.util.List;
 @AllArgsConstructor
 public class PaymentAccountController extends BaseController {
 
-    private final PaymentTransactionEventRepository transactionEventRepository;
+    private final MoneyTransferRepository moneyTransferRepository;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<PaymentAccountBalance> getAllAccountsBalance() {
-        return transactionEventRepository.getAllAccountsBalance();
+        return moneyTransferRepository.getAllAccountsBalance();
     }
 }

@@ -18,8 +18,8 @@ public class PaymentAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(unique = true, nullable = false, length = 64)
-    private String name;
+    @Column(name = "account_number", unique = true, nullable = false, length = 64)
+    private String accountNumber;
 
 }
 

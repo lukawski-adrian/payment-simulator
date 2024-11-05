@@ -13,26 +13,25 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
 @NoArgsConstructor
 @Setter
 @Getter
 @Accessors(chain = true)
-@Table(name = "payment_transaction_events")
+@Table(name = "payment_transactions")
 @Entity
-public class PaymentTransactionEvent {
+public class PaymentTransaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "transaction_id", nullable = false, length = 64)
+    @Column(name = "transaction_id", nullable = false, length = 36)
     @JdbcType(VarcharJdbcType.class)
     private UUID transactionId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "transaction_type", nullable = false, length = 64)
-    private TransactionType transactionType;
+    @Column(name = "transaction_type", nullable = false, length = 32)
+    private PaymentTransactionType transactionType;
 
     @Column(nullable = false)
     private BigDecimal amount;
@@ -44,8 +43,11 @@ public class PaymentTransactionEvent {
     private String comment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id")
-    private PaymentAccount account;
+    @JoinColumn(name = "sender_account_id")
+    private PaymentAccount sender;
 
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipient_account_id")
+    private PaymentAccount recipient;
 }
-

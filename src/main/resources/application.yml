@@ -35,7 +35,7 @@ resilience4j:
         # Fixed wait duration between retry attempts
         wait-duration: 1s
         ignore-exceptions:
-          - pl.varlab.payment.common.ValidationException
+          - pl.varlab.payment.common.PaymentFlowException
 
   bulkhead:
     configs:
