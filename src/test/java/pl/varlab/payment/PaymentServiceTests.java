@@ -1,44 +1,78 @@
 package pl.varlab.payment;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import pl.varlab.payment.transaction.PaymentFallbackService;
-import pl.varlab.payment.transaction.handler.TransactionHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import pl.varlab.payment.common.ConflictDataException;
+import pl.varlab.payment.transaction.TransactionRequest;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
+import java.math.BigDecimal;
+import java.util.UUID;
 
-@Testcontainers
-public class PaymentServiceTests {
+import static java.math.BigDecimal.ZERO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static pl.varlab.payment.transfer.TransferType.DEPOSIT;
+import static pl.varlab.payment.transfer.TransferType.WITHDRAW;
 
-    private final TransactionHandler transactionHandler = mock(TransactionHandler.class);
-    private final PaymentFallbackService fallbackService = mock(PaymentFallbackService.class);
 
-    // will be shared between test methods
-    @Container
-    private static final PostgreSQLContainer POSTGRESQL_CONTAINER = new PostgreSQLContainer()
-            .withDatabaseName("foo")
-            .withUsername("foo")
-            .withPassword("secret");
+public class PaymentServiceTests extends BaseJpaTest {
 
-    @BeforeEach
-    void setUp() {
-        reset(transactionHandler, fallbackService);
-    }
+    @Autowired
+    private PaymentService paymentService;
 
     @Test
     public void shouldProcessTransaction_thenTransferFunds() {
-        assertTrue(POSTGRESQL_CONTAINER.isRunning());
-        // TODO: Implement integration test for transaction chain of responsibility
+        var senderAccountNumber = "ACC1";
+        var recipientAccountNumber = "ACC2";
+        var amount = BigDecimal.valueOf(20.33d);
+
+        var transactionId = UUID.randomUUID();
+        var transactionRequest = new TransactionRequest(transactionId, senderAccountNumber, recipientAccountNumber, amount);
+
+        var senderAccountBalanceBefore = getAccountBalance(senderAccountNumber);
+        var recipientAccountBalanceBefore = getAccountBalance(recipientAccountNumber);
+
+        assertThat(isAnyTransferExists(transactionId)).isFalse();
+        assertThat(senderAccountBalanceBefore).isGreaterThan(amount);
+        assertThat(recipientAccountBalanceBefore).isGreaterThan(ZERO);
+
+        paymentService.processTransaction(transactionRequest);
+
+        var senderAccountBalanceAfter = getAccountBalance(senderAccountNumber);
+        var recipientAccountBalanceAfter = getAccountBalance(recipientAccountNumber);
+
+        assertThat(isTransferExists(transactionId, WITHDRAW)).isTrue();
+        assertThat(isTransferExists(transactionId, DEPOSIT)).isTrue();
+        assertThat(senderAccountBalanceAfter).isEqualTo(senderAccountBalanceBefore.subtract(amount));
+        assertThat(recipientAccountBalanceAfter).isEqualTo(recipientAccountBalanceBefore.add(amount));
     }
 
     @Test
-    public void shouldReportTransaction_whenUnexpectedExceptionOccurred() {
-        // TODO: Implement integration test for transaction chain of responsibility
+    public void shouldBlockTransaction_whenFraudExceptionOccurred() {
+        var senderAccountNumber = "ACC2";
+        var recipientAccountNumber = "ACC1";
+        var amount = BigDecimal.valueOf(11);
+
+        var transactionId = UUID.randomUUID();
+        var transactionRequest = new TransactionRequest(transactionId, senderAccountNumber, recipientAccountNumber, amount);
+
+        var senderAccountBalanceBefore = getAccountBalance(senderAccountNumber);
+        var recipientAccountBalanceBefore = getAccountBalance(recipientAccountNumber);
+
+        assertThat(isAnyTransferExists(transactionId)).isFalse();
+        assertThat(senderAccountBalanceBefore).isGreaterThan(amount);
+        assertThat(recipientAccountBalanceBefore).isGreaterThan(ZERO);
+
+        assertThrows(ConflictDataException.class, () -> paymentService.processTransaction(transactionRequest), "Fraud detected (divisor 11)");
+
+        var senderAccountBalanceAfter = getAccountBalance(senderAccountNumber);
+        var recipientAccountBalanceAfter = getAccountBalance(recipientAccountNumber);
+
+        assertThat(isTransferExists(transactionId, WITHDRAW)).isTrue();
+        assertThat(isTransferExists(transactionId, DEPOSIT)).isFalse();
+        assertThat(senderAccountBalanceAfter).isEqualTo(senderAccountBalanceBefore.subtract(amount));
+        assertThat(recipientAccountBalanceAfter).isEqualTo(recipientAccountBalanceBefore);
     }
+
 
 }
