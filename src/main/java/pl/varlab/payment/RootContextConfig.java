@@ -20,6 +20,7 @@ public class RootContextConfig {
                                                  ValidationService validationService,
                                                  PaymentTransactionBlocker transactionBlocker,
                                                  List<TransactionGuard> transactionHandlers) {
+
         var validationHandler = new InitialValidationTransactionHandler(validationService);
         var withdrawHandler = new WithdrawTransactionHandler(transactionEventService, transactionBlocker);
         var verificationHandler = new GuardTransactionHandler(transactionHandlers, transactionBlocker, paymentTransactionService);

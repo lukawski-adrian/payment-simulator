@@ -1,11 +1,8 @@
 package pl.varlab.payment.transaction;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.UUID;
 
-import static java.math.RoundingMode.HALF_EVEN;
 import static org.springframework.util.StringUtils.hasLength;
 
 public record TransactionRequest(UUID transactionId, String senderAccountNumber, String recipientAccountNumber,

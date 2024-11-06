@@ -12,13 +12,13 @@ import pl.varlab.payment.transaction.TransactionRequest;
 @AllArgsConstructor
 public final class WithdrawTransactionHandler extends BaseTransactionHandler {
 
-    private final MoneyTransferService transactionEventService;
+    private final MoneyTransferService moneyTransferService;
     private final PaymentTransactionBlocker transactionBlocker;
 
     @Override
     public void handle(TransactionRequest transactionRequest) {
         try {
-            transactionEventService.withdraw(transactionRequest);
+            moneyTransferService.withdraw(transactionRequest);
             super.handle(transactionRequest);
         } catch (FraudDetectedException e) {
             log.warn("Fraud detected during withdraw: {}", transactionRequest);
